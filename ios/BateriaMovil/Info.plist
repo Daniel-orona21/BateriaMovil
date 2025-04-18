@@ -44,6 +44,16 @@
       <key>NSAllowsLocalNetworking</key>
       <true/>
     </dict>
+    <key>NSCameraUsageDescription</key>
+    <string>Allow $(PRODUCT_NAME) to access your camera.</string>
+    <key>NSHealthShareUsageDescription</key>
+    <string>This app uses the pedometer to count steps.</string>
+    <key>NSHealthUpdateUsageDescription</key>
+    <string>This app uses the pedometer to count steps.</string>
+    <key>NSMicrophoneUsageDescription</key>
+    <string>Allow $(PRODUCT_NAME) to access your microphone</string>
+    <key>NSMotionUsageDescription</key>
+    <string>This app uses motion sensors to demonstrate device features.</string>
     <key>UILaunchStoryboardName</key>
     <string>SplashScreen</string>
     <key>UIRequiredDeviceCapabilities</key>

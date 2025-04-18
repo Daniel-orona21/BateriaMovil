@@ -51,13 +51,13 @@ function TabNavigator() {
         headerTransparent: true,
       })}
     >
-      <Tab.Screen 
-        name="Inicio" 
-        component={Inicio}
-        options={{
-          title: 'Componentes',
-        }}
-      />
+    <Tab.Screen 
+      name="Inicio" 
+      component={Inicio}
+      options={{
+        title: 'Cargando batería...', // temporal, se reemplaza luego
+      }}
+    />
       <Tab.Screen 
         name="InformeBateria" 
         component={InformeBateria}

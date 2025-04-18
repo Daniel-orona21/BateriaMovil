@@ -1,18 +1,28 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import React, { useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import DeviceInfo from 'react-native-device-info';
 
 export default function Inicio({ navigation }) {
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      try {
+        const level = await DeviceInfo.getBatteryLevel();
+        const porcentaje = (level * 100).toFixed(0); // Mostramos 2 decimales para mayor precisión
+        console.log('Nivel de batería raw:', level);
+        console.log('Nivel de batería calculado:', porcentaje);
+        navigation.setOptions({ title: `Nivel de batería: ${porcentaje}%` });
+      } catch (error) {
+        console.error('Error al obtener el nivel de batería:', error);
+      }
+    }, 1000); // Actualizamos cada segundo para mayor precisión
+
+    return () => clearInterval(interval);
+  }, []);
+ 
   return (
     <View style={styles.container}>
       <Text style={styles.text}>Pantalla de Inicio</Text>
-      {/* <TouchableOpacity 
-        style={styles.logoutButton}
-        onPress={() => navigation.navigate('Login')}
-      >
-        <Ionicons name="log-out-outline" size={24} color="#fff" />
-        <Text style={styles.logoutText}>Salir</Text>
-      </TouchableOpacity> */}
     </View>
   );
 }
