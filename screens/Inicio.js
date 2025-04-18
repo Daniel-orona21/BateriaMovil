@@ -6,13 +6,13 @@ export default function Inicio({ navigation }) {
   return (
     <View style={styles.container}>
       <Text style={styles.text}>Pantalla de Inicio</Text>
-      <TouchableOpacity 
+      {/* <TouchableOpacity 
         style={styles.logoutButton}
         onPress={() => navigation.navigate('Login')}
       >
         <Ionicons name="log-out-outline" size={24} color="#fff" />
         <Text style={styles.logoutText}>Salir</Text>
-      </TouchableOpacity>
+      </TouchableOpacity> */}
     </View>
   );
 }

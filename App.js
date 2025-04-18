@@ -55,7 +55,7 @@ function TabNavigator() {
         name="Inicio" 
         component={Inicio}
         options={{
-          headerShown: false,
+          title: 'Componentes',
         }}
       />
       <Tab.Screen 
