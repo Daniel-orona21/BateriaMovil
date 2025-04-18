@@ -1,0 +1,6 @@
+<key>NSLocationWhenInUseUsageDescription</key>
+<string>Necesitamos acceso a tu ubicación para mostrar tu posición en el mapa</string>
+<key>NSLocationAlwaysUsageDescription</key>
+<string>Necesitamos acceso a tu ubicación para mostrar tu posición en el mapa</string>
+<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+<string>Necesitamos acceso a tu ubicación para mostrar tu posición en el mapa</string> 
