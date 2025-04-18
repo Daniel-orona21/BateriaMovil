@@ -5,7 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 export default function Login({ navigation }) {
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Batería Móvil</Text>
+      <Text style={styles.title}>Mi Batería</Text>
       <TouchableOpacity 
         style={styles.button}
         onPress={() => navigation.navigate('MainTabs')}
@@ -25,7 +25,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#000',
   },
   title: {
-    fontSize: 80,
+    fontSize: 90,
     fontWeight: 'bold',
     color: '#fff',
     marginBottom: 40,
