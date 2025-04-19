@@ -89,17 +89,17 @@ export default function PedometerBox() {
           useNativeDriver: true
         }),
         
-        // Animar número - simultáneamente
+        // Animar número - simultáneamente (ahora con el mismo easing que el icono)
         Animated.timing(numberOpacityAnim, {
           toValue: 0,
           duration: 500,
-          easing: Easing.in(Easing.cubic),
+          easing: Easing.out(Easing.cubic), // Cambio de in a out para coincidir
           useNativeDriver: true
         }),
         Animated.timing(numberScaleAnim, {
           toValue: 0.5,
           duration: 500,
-          easing: Easing.in(Easing.cubic),
+          easing: Easing.out(Easing.cubic), // Cambio de in a out para coincidir
           useNativeDriver: true
         })
       ]).start();

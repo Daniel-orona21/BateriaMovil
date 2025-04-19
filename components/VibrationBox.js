@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { StyleSheet, TouchableOpacity, Vibration, Platform } from 'react-native';
+import { StyleSheet, TouchableOpacity, Vibration, Platform, Animated, Easing } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
 
@@ -10,34 +10,105 @@ export default function VibrationBox() {
   // Estado para controlar el estilo visual (activo/inactivo)
   const [isActive, setIsActive] = useState(false);
   const intervalRef = useRef(null); // Ref para guardar el ID del intervalo
+  const shakeAnimation = useRef(new Animated.Value(0)).current; // Para animación de vibración
+  const animationRef = useRef(null); // Ref para almacenar la animación actual
+
+  // Configurar animación de shake (pulso único)
+  const doSingleShake = () => {
+    // Resetear animación al inicio
+    shakeAnimation.setValue(0);
+    
+    // Crear secuencia de una única vibración rápida
+    animationRef.current = Animated.sequence([
+      // Shake más rápido (50ms por movimiento)
+      Animated.timing(shakeAnimation, {
+        toValue: 1.5,
+        duration: 50,
+        easing: Easing.linear,
+        useNativeDriver: true,
+      }),
+      Animated.timing(shakeAnimation, {
+        toValue: -1.5,
+        duration: 50,
+        easing: Easing.linear,
+        useNativeDriver: true,
+      }),
+      Animated.timing(shakeAnimation, {
+        toValue: 1,
+        duration: 50,
+        easing: Easing.linear,
+        useNativeDriver: true,
+      }),
+      Animated.timing(shakeAnimation, {
+        toValue: -1,
+        duration: 50,
+        easing: Easing.linear,
+        useNativeDriver: true,
+      }),
+      Animated.timing(shakeAnimation, {
+        toValue: 0.5,
+        duration: 50,
+        easing: Easing.linear,
+        useNativeDriver: true,
+      }),
+      Animated.timing(shakeAnimation, {
+        toValue: -0.5,
+        duration: 50,
+        easing: Easing.linear,
+        useNativeDriver: true,
+      }),
+      Animated.timing(shakeAnimation, {
+        toValue: 0,
+        duration: 50,
+        easing: Easing.linear,
+        useNativeDriver: true,
+      }),
+    ]);
+    
+    // Iniciar la secuencia
+    animationRef.current.start();
+  };
+
+  const stopShakeAnimation = () => {
+    // Detener la animación y resetear
+    if (animationRef.current) {
+      animationRef.current.stop();
+    }
+    shakeAnimation.setValue(0);
+  };
 
   const handlePress = () => {
     const nextState = !isActive;
     setIsActive(nextState);
-    // console.log(`VibrationBox: Toggled state to ${nextState}`); 
 
     if (nextState) {
-      // console.log(`VibrationBox: Activating vibration. Platform: ${Platform.OS}`);
       // Vibra una vez inmediatamente al activar
-      Vibration.vibrate(); 
+      Vibration.vibrate();
       
-      // Inicia intervalo para vibraciones repetidas (funciona en ambas plataformas)
+      // Iniciar animación de shake para el primer pulso
+      doSingleShake();
+      
+      // Inicia intervalo para vibraciones repetidas
       // Limpia cualquier intervalo anterior por si acaso
       if (intervalRef.current) clearInterval(intervalRef.current);
       
       intervalRef.current = setInterval(() => {
-        // console.log('VibrationBox: Vibrating via interval');
+        // Vibrar el dispositivo
         Vibration.vibrate();
+        
+        // Hacer shake en sincronía con cada vibración
+        doSingleShake();
       }, PULSE_INTERVAL_MS);
 
     } else {
-      // console.log('VibrationBox: Deactivating vibration, calling cancel and clearing interval.'); 
       // Detiene el intervalo
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
         intervalRef.current = null;
       }
-      // Cancela cualquier vibración física en curso (importante para Android si vibrate(pattern, true) se usara)
+      // Detiene la animación de shake
+      stopShakeAnimation();
+      // Cancela cualquier vibración física en curso
       Vibration.cancel();
     }
   };
@@ -46,26 +117,37 @@ export default function VibrationBox() {
   useEffect(() => {
     return () => {
       if (intervalRef.current) {
-        // console.log('VibrationBox: Cleaning up interval on unmount');
         clearInterval(intervalRef.current);
       }
+      // Detener cualquier animación al desmontar
+      stopShakeAnimation();
     };
-  }, []); // El array vacío asegura que esto solo se ejecute al montar y desmontar
+  }, []); 
+
+  // Crear transformación de shake (más pronunciada)
+  const shakeInterpolation = shakeAnimation.interpolate({
+    inputRange: [-1.5, 0, 1.5],
+    outputRange: ['-8deg', '0deg', '8deg'],
+  });
 
   return (
     <TouchableOpacity 
       style={[
         styles.caja,
-        isActive && styles.cajaActiva // Aplica estilo activo si isActive es true
+        isActive && styles.cajaActiva
       ]}
       onPress={handlePress}
     >
       <BlurView intensity={50} tint={isActive ? "light" : "dark"} style={StyleSheet.absoluteFill} />
-      <MaterialCommunityIcons 
-        name={"vibrate"}
-        size={50} 
-        color={isActive ? "#000" : "#fff"}
-      />
+      <Animated.View style={{
+        transform: [{ rotate: shakeInterpolation }]
+      }}>
+        <MaterialCommunityIcons 
+          name={"vibrate"}
+          size={50} 
+          color={isActive ? "#000" : "#fff"}
+        />
+      </Animated.View>
     </TouchableOpacity>
   );
 }
@@ -80,6 +162,6 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   cajaActiva: {
-    backgroundColor: 'rgba(255, 255, 255, 0.75)', // Fondo blanco cuando está activa
+    backgroundColor: 'rgba(255, 255, 255, 0.75)',
   },
 }); 
