@@ -6,6 +6,7 @@ import DeviceInfo from 'react-native-device-info';
 import CompassBox from '../components/CompassBox'; 
 import MapBox from '../components/MapBox';
 import FlashlightBox from '../components/FlashlightBox';
+import VibrationBox from '../components/VibrationBox';
 
 export default function Inicio({ navigation }) {
 
@@ -31,9 +32,9 @@ export default function Inicio({ navigation }) {
         <CompassBox />
         <MapBox />
         <FlashlightBox />
+        <VibrationBox />
 
         {/* Las cajas restantes (pueden ser extraídas a componentes también si se desea) */}
-        <View style={styles.caja}></View>
         <View style={styles.caja}></View>
         <View style={styles.caja}></View>
       </SafeAreaView>
@@ -57,7 +58,7 @@ const styles = StyleSheet.create({
     display: 'flex',
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 10
+    gap: 20
   },
   // Estilo 'caja' general que pueden usar otros componentes o las cajas restantes
   caja: {
