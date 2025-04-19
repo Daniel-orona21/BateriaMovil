@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { StyleSheet, TouchableOpacity, Text, View, Platform, Animated } from 'react-native';
+import { StyleSheet, TouchableOpacity, Text, View, Platform, Animated, Easing } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Pedometer, Accelerometer } from 'expo-sensors';
 
@@ -17,7 +17,12 @@ export default function PedometerBox() {
   const tempStepCountRef = useRef(0);
   const lastStepsRef = useRef(0);
   const movementThreshold = 1.1; // Umbral de movimiento para detectar pasos
-  const animatedOpacity = useRef(new Animated.Value(1)).current;
+
+  // Animaciones
+  const iconSizeAnim = useRef(new Animated.Value(60)).current;
+  const iconPositionAnim = useRef(new Animated.Value(0)).current;
+  const numberOpacityAnim = useRef(new Animated.Value(0)).current;
+  const numberScaleAnim = useRef(new Animated.Value(0.5)).current;
 
   // Comprobar disponibilidad al inicio
   useEffect(() => {
@@ -28,29 +33,75 @@ export default function PedometerBox() {
     };
   }, []);
   
-  // Animar el texto de "Contando..." cuando isWalking cambia
+  // Reset animaciones cuando cambia el estado
   useEffect(() => {
+    // Resetear animaciones antes de iniciar nuevas
     if (isActive) {
-      Animated.loop(
-        Animated.sequence([
-          Animated.timing(animatedOpacity, {
-            toValue: 0.3,
-            duration: 1000,
-            useNativeDriver: true,
-          }),
-          Animated.timing(animatedOpacity, {
-            toValue: 1,
-            duration: 1000,
-            useNativeDriver: true,
-          })
-        ])
-      ).start();
+      // Resetear el estado de las animaciones para asegurar sincronización
+      numberOpacityAnim.setValue(0);
+      numberScaleAnim.setValue(0.5);
+      
+      // Iniciar todas las animaciones simultáneamente
+      Animated.parallel([
+        // Animar icono
+        Animated.timing(iconSizeAnim, {
+          toValue: 30,
+          duration: 500,
+          easing: Easing.out(Easing.cubic),
+          useNativeDriver: true
+        }),
+        Animated.timing(iconPositionAnim, {
+          toValue: 50,
+          duration: 500,
+          easing: Easing.out(Easing.cubic),
+          useNativeDriver: true
+        }),
+        
+        // Animar número - exactamente al mismo tiempo
+        Animated.timing(numberOpacityAnim, {
+          toValue: 1,
+          duration: 500,
+          easing: Easing.out(Easing.cubic),
+          useNativeDriver: true
+        }),
+        Animated.timing(numberScaleAnim, {
+          toValue: 1.3,
+          duration: 500,
+          easing: Easing.out(Easing.cubic), // Usar la misma curva que el icono
+          useNativeDriver: true
+        })
+      ]).start();
     } else {
-      Animated.timing(animatedOpacity, {
-        toValue: 1,
-        duration: 500,
-        useNativeDriver: true,
-      }).start();
+      // Resetear para desactivación
+      Animated.parallel([
+        // Animar icono - volver a la posición original
+        Animated.timing(iconSizeAnim, {
+          toValue: 60,
+          duration: 500, 
+          easing: Easing.out(Easing.cubic),
+          useNativeDriver: true
+        }),
+        Animated.timing(iconPositionAnim, {
+          toValue: 0,
+          duration: 500,
+          easing: Easing.out(Easing.cubic),
+          useNativeDriver: true
+        }),
+        
+        // Animar número - simultáneamente
+        Animated.timing(numberOpacityAnim, {
+          toValue: 0,
+          duration: 500,
+          easing: Easing.in(Easing.cubic),
+          useNativeDriver: true
+        }),
+        Animated.timing(numberScaleAnim, {
+          toValue: 0.5,
+          duration: 500,
+          easing: Easing.in(Easing.cubic),
+          useNativeDriver: true
+        })
+      ]).start();
     }
   }, [isActive]);
   
@@ -193,21 +244,43 @@ export default function PedometerBox() {
       ]}
       onPress={handlePress}
     >
-      <MaterialCommunityIcons 
-        name={"walk"} 
-        size={40} 
-        color={isActive ? "#000" : "#fff"} 
-      />
-      {isActive && (
-        <View style={styles.counterContainer}>
-          <Text style={styles.counterText}>{stepCount}</Text>
-          
-          {/* Indicador de actividad */}
-          <Animated.Text style={[styles.statusText, { opacity: animatedOpacity }]}>
-            {isWalking ? "Caminando..." : "Esperando..."}
-          </Animated.Text>
-        </View>
-      )}
+      <View style={styles.container}>
+        {/* Número con animación de opacidad y escala */}
+        <Animated.Text 
+          style={[
+            styles.counterText,
+            { 
+              opacity: numberOpacityAnim,
+              transform: [{ scale: numberScaleAnim }]
+            }
+          ]}
+        >
+          {stepCount}
+        </Animated.Text>
+        
+        {/* Icono con animación de tamaño y posición */}
+        <Animated.View
+          style={[
+            styles.iconContainer,
+            {
+              transform: [
+                { translateY: iconPositionAnim },
+                { scale: iconSizeAnim.interpolate({
+                  inputRange: [30, 60],
+                  outputRange: [0.5, 1]
+                })}
+              ]
+            }
+          ]}
+        >
+          <MaterialCommunityIcons 
+            name="walk" 
+            size={60}
+            color={isActive ? "#000" : "#fff"} 
+          />
+        </Animated.View>
+      </View>
+      
       {!isPedometerAvailable && isPedometerAvailable !== null && (
         <View style={styles.notAvailableContainer}>
           <Text style={styles.notAvailableText}>No disponible</Text>
@@ -231,23 +304,22 @@ const styles = StyleSheet.create({
   cajaActiva: {
     backgroundColor: 'rgba(255, 255, 255, 0.75)',
   },
-  counterContainer: {
-    marginTop: 10,
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
-    padding: 8,
-    borderRadius: 15,
-    minWidth: 80,
+  container: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
     alignItems: 'center',
   },
   counterText: {
-    fontSize: 24,
+    fontSize: 60,
     fontWeight: 'bold',
-    color: '#FFFFFF',
+    color: '#000',
   },
-  statusText: {
-    fontSize: 12,
-    color: '#FFFFFF',
-    marginTop: 4,
+  iconContainer: {
+    position: 'absolute',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   notAvailableContainer: {
     position: 'absolute',
