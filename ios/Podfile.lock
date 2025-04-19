@@ -1807,6 +1807,8 @@ PODS:
   - RNSensors (7.3.6):
     - React-Core
   - SocketRocket (0.7.1)
+  - Torchstate (0.1.2):
+    - ExpoModulesCore
   - Turf (2.8.0)
   - Yoga (0.0.0)
   - ZXingObjC/Core (3.6.9)
@@ -1905,6 +1907,7 @@ DEPENDENCIES:
   - "rnmapbox-maps (from `../node_modules/@rnmapbox/maps`)"
   - RNScreens (from `../node_modules/react-native-screens`)
   - RNSensors (from `../node_modules/react-native-sensors`)
+  - "Torchstate (from `../node_modules/@drakexorn/expo-torchstate/ios`)"
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
 SPEC REPOS:
@@ -2093,6 +2096,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-screens"
   RNSensors:
     :path: "../node_modules/react-native-sensors"
+  Torchstate:
+    :path: "../node_modules/@drakexorn/expo-torchstate/ios"
   Yoga:
     :path: "../node_modules/react-native/ReactCommon/yoga"
 
@@ -2189,6 +2194,7 @@ SPEC CHECKSUMS:
   RNScreens: 2856a2abe759a5a56946874f76372c9f033af19a
   RNSensors: 117ba71c7eeeea0407ea0c0bb79e3495d602049b
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
+  Torchstate: 5c69be64dabb0957f66555aeed540754d011c427
   Turf: aa2ede4298009639d10db36aba1a7ebaad072a5e
   Yoga: 40f19fff64dce86773bf8b602c7070796c007970
   ZXingObjC: 8898711ab495761b2dbbdec76d90164a6d7e14c5

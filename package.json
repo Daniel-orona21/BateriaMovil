@@ -10,6 +10,7 @@
     "web": "expo start --web"
   },
   "dependencies": {
+    "@drakexorn/expo-torchstate": "^0.1.2",
     "@expo-google-fonts/inter": "^0.3.0",
     "@expo/vector-icons": "^14.0.2",
     "@react-native-community/geolocation": "^3.4.0",
