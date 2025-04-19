@@ -56,6 +56,7 @@ function TabNavigator() {
       component={Inicio}
       options={{
         title: 'Cargando batería...', // temporal, se reemplaza luego
+        tabBarLabel: 'Componentes',
       }}
     />
       <Tab.Screen 

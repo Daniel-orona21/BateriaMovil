@@ -5,6 +5,7 @@ import DeviceInfo from 'react-native-device-info';
 // Importar los nuevos componentes
 import CompassBox from '../components/CompassBox'; 
 import MapBox from '../components/MapBox';
+import FlashlightBox from '../components/FlashlightBox';
 
 export default function Inicio({ navigation }) {
 
@@ -29,9 +30,9 @@ export default function Inicio({ navigation }) {
         {/* Usar los componentes importados */}
         <CompassBox />
         <MapBox />
+        <FlashlightBox />
 
         {/* Las cajas restantes (pueden ser extraídas a componentes también si se desea) */}
-        <View style={styles.caja}></View>
         <View style={styles.caja}></View>
         <View style={styles.caja}></View>
         <View style={styles.caja}></View>
