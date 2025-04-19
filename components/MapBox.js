@@ -175,6 +175,7 @@ export default function MapBox() {
           scrollEnabled={true}
           pitchEnabled={true}
           rotateEnabled={true}
+          userInterfaceStyle="dark"
         />
       )}
 
@@ -187,7 +188,7 @@ export default function MapBox() {
           <Ionicons
             name="location"
             size={50}
-            color={isMapActive ? '#000' : '#fff'}
+            color={isMapActive ? '#fff' : '#fff'}
           />
         </Animated.View>
       </TouchableOpacity>

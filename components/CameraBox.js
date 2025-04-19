@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { StyleSheet, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { StyleSheet, TouchableOpacity, Animated, View } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useCamera } from '../context/CameraContext';
 import { Camera } from 'react-native-vision-camera';
@@ -10,6 +10,10 @@ export default function CameraBox() {
   const [isActive, setIsActive] = useState(false);
   const [hasPermission, setHasPermission] = useState(false);
   const { isCameraActive, activateCamera, deactivateCamera } = useCamera();
+  
+  // Valores de animación para transición de iconos
+  const fadeIn = useRef(new Animated.Value(1)).current;
+  const fadeOut = useRef(new Animated.Value(0)).current;
 
   // Solicitar permisos al montar el componente
   useEffect(() => {
@@ -23,6 +27,39 @@ export default function CameraBox() {
   useEffect(() => {
     setIsActive(isCameraActive);
   }, [isCameraActive]);
+  
+  // Animación cuando cambia el estado
+  useEffect(() => {
+    if (isActive) {
+      // Transición a camera-off
+      Animated.parallel([
+        Animated.timing(fadeIn, {
+          toValue: 0,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+        Animated.timing(fadeOut, {
+          toValue: 1,
+          duration: 200,
+          useNativeDriver: true,
+        })
+      ]).start();
+    } else {
+      // Transición a camera
+      Animated.parallel([
+        Animated.timing(fadeIn, {
+          toValue: 1,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+        Animated.timing(fadeOut, {
+          toValue: 0,
+          duration: 200,
+          useNativeDriver: true,
+        })
+      ]).start();
+    }
+  }, [isActive]);
 
   const handlePress = () => {
     const nextState = !isActive;
@@ -46,18 +83,33 @@ export default function CameraBox() {
 
   return (
     <TouchableOpacity 
-      style={[
-        styles.caja,
-        isActive && styles.cajaActiva
-      ]}
+      style={styles.caja}
       onPress={handlePress}
     >
-      <BlurView intensity={50} tint={isActive ? "light" : "dark"} style={StyleSheet.absoluteFill} />
-      <MaterialCommunityIcons 
-        name="camera"
-        size={60} 
-        color={isActive ? "#000" : "#fff"}
-      />
+      <BlurView intensity={50} tint="dark" style={StyleSheet.absoluteFill} />
+      <View style={styles.iconContainer}>
+        <Animated.View style={{
+          opacity: fadeIn,
+          position: 'absolute',
+        }}>
+          <MaterialCommunityIcons 
+            name="camera"
+            size={60} 
+            color="#fff"
+          />
+        </Animated.View>
+        
+        <Animated.View style={{
+          opacity: fadeOut,
+          position: 'absolute',
+        }}>
+          <MaterialCommunityIcons 
+            name="camera-off"
+            size={60} 
+            color="#fff"
+          />
+        </Animated.View>
+      </View>
     </TouchableOpacity>
   );
 }
@@ -70,6 +122,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     overflow: 'hidden',
+  },
+  iconContainer: {
+    width: 60,
+    height: 60,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   cajaActiva: {
     backgroundColor: 'rgba(255, 255, 255, 0.75)',

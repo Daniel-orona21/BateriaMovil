@@ -1,8 +1,9 @@
 import React, { useEffect } from 'react';
-import { StyleSheet, TouchableOpacity, Alert, Platform } from 'react-native';
+import { StyleSheet, TouchableOpacity, Alert, Platform, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTorch } from '@drakexorn/expo-torchstate';
 import { BlurView } from 'expo-blur';
+import { LinearGradient } from 'expo-linear-gradient';
 
 export default function FlashlightBox() {
   const [isTorchOn, setTorchStatus] = useTorch();
@@ -27,19 +28,28 @@ export default function FlashlightBox() {
 
   return (
     <TouchableOpacity 
-      style={[
-        styles.caja,
-        isTorchOn && styles.cajaActiva
-      ]}
+      style={styles.caja}
       onPress={toggleFlashlight}
     >
-      <BlurView intensity={50} tint={isTorchOn ? "light" : "dark"} style={StyleSheet.absoluteFill} />
-      <Ionicons 
-        name={isTorchOn ? "flashlight" : "flashlight-outline"} 
-        size={50} 
-        color={isTorchOn ? "#000" : "#fff"} 
-        style={{ transform: [{ rotate: '-44deg' }] }} 
-      />
+      <BlurView intensity={50} tint="dark" style={StyleSheet.absoluteFill} />
+      
+      {/* Contenedor principal que posiciona todos los elementos */}
+      <View style={styles.contentContainer}>
+        {/* Haz de luz cónico */}
+        {isTorchOn && (
+          <View style={styles.lightConeWrapper}>
+            <View style={styles.lightCone} />
+          </View>
+        )}
+        
+        {/* Icono de la linterna */}
+        <Ionicons 
+          name={isTorchOn ? "flashlight" : "flashlight-outline"} 
+          size={50} 
+          color="#fff" 
+          style={styles.flashlightIcon} 
+        />
+      </View>
     </TouchableOpacity>
   );
 }
@@ -53,7 +63,38 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     overflow: 'hidden',
   },
-  cajaActiva: {
-    backgroundColor: 'rgba(255, 255, 255, 0.75)', // Fondo blanco cuando está activa
+  contentContainer: {
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'relative',
+  },
+  flashlightIcon: {
+    transform: [{ rotate: '-45deg' }],
+    zIndex: 2,
+  },
+  lightConeWrapper: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 1,
+  },
+  lightCone: {
+    position: 'absolute',
+    width: 20,
+    height: 0,
+    borderLeftWidth: 80,
+    borderRightWidth: 80,
+    borderBottomWidth: 200,
+    borderLeftColor: 'transparent',
+    borderRightColor: 'transparent',
+    borderBottomColor: 'rgba(255, 255, 255, 0.2)',
+    transform: [
+      { rotate: '180deg' },
+      { translateY: 100 }
+    ],
   },
 }); 

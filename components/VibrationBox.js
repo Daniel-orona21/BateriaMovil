@@ -132,20 +132,17 @@ export default function VibrationBox() {
 
   return (
     <TouchableOpacity 
-      style={[
-        styles.caja,
-        isActive && styles.cajaActiva
-      ]}
+      style={styles.caja}
       onPress={handlePress}
     >
-      <BlurView intensity={50} tint={isActive ? "light" : "dark"} style={StyleSheet.absoluteFill} />
+      <BlurView intensity={50} tint="dark" style={StyleSheet.absoluteFill} />
       <Animated.View style={{
         transform: [{ rotate: shakeInterpolation }]
       }}>
         <MaterialCommunityIcons 
           name={"vibrate"}
           size={50} 
-          color={isActive ? "#000" : "#fff"}
+          color="#fff"
         />
       </Animated.View>
     </TouchableOpacity>

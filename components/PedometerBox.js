@@ -239,13 +239,10 @@ export default function PedometerBox() {
 
   return (
     <TouchableOpacity 
-      style={[
-        styles.caja,
-        isActive && styles.cajaActiva
-      ]}
+      style={styles.caja}
       onPress={handlePress}
     >
-      <BlurView intensity={50} tint={isActive ? "light" : "dark"} style={StyleSheet.absoluteFill} />
+      <BlurView intensity={50} tint="dark" style={StyleSheet.absoluteFill} />
       <View style={styles.container}>
         {/* Número con animación de opacidad y escala */}
         <Animated.Text 
@@ -278,7 +275,7 @@ export default function PedometerBox() {
           <MaterialCommunityIcons 
             name="walk" 
             size={60}
-            color={isActive ? "#000" : "#fff"} 
+            color="#fff" 
           />
         </Animated.View>
       </View>
@@ -315,7 +312,7 @@ const styles = StyleSheet.create({
   counterText: {
     fontSize: 60,
     fontWeight: 'bold',
-    color: '#000',
+    color: '#ffff',
   },
   iconContainer: {
     position: 'absolute',
