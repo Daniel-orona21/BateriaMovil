@@ -14,7 +14,10 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.dannielorona.BateriaMovil"
+      "bundleIdentifier": "com.dannielorona.BateriaMovil",
+      "infoPlist": {
+        "NSMotionUsageDescription": "Este permiso es necesario para contar tus pasos."
+      }
     },
     "android": {
       "adaptiveIcon": {

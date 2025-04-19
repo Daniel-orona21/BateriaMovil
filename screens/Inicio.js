@@ -7,6 +7,7 @@ import CompassBox from '../components/CompassBox';
 import MapBox from '../components/MapBox';
 import FlashlightBox from '../components/FlashlightBox';
 import VibrationBox from '../components/VibrationBox';
+import PedometerBox from '../components/PedometerBox';
 
 export default function Inicio({ navigation }) {
 
@@ -33,9 +34,9 @@ export default function Inicio({ navigation }) {
         <MapBox />
         <FlashlightBox />
         <VibrationBox />
+        <PedometerBox />
 
         {/* Las cajas restantes (pueden ser extraídas a componentes también si se desea) */}
-        <View style={styles.caja}></View>
         <View style={styles.caja}></View>
       </SafeAreaView>
     </View>
