@@ -1,10 +1,18 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { Image } from 'expo-image';
 
 export default function Login({ navigation }) {
   return (
     <View style={styles.container}>
+      <Image 
+        source={require('../assets/IMG_1226.png')} 
+        style={StyleSheet.absoluteFill}
+        contentFit="cover"
+        cachePolicy="memory-disk"
+        transition={0}
+      />
       <Text style={styles.title}>Mi Batería</Text>
       <TouchableOpacity 
         style={styles.button}
@@ -44,5 +52,6 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 18,
     marginRight: 10,
+    fontWeight: '500',
   },
 }); 
