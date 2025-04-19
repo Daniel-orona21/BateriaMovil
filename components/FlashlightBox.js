@@ -36,6 +36,7 @@ export default function FlashlightBox() {
         name={isTorchOn ? "flashlight" : "flashlight-outline"} 
         size={50} 
         color={isTorchOn ? "#000" : "#fff"} 
+        style={{ transform: [{ rotate: '-44deg' }] }} 
       />
     </TouchableOpacity>
   );
