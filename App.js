@@ -3,6 +3,8 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
+import { BlurView } from 'expo-blur';
+import { View, StyleSheet } from 'react-native';
 import Login from './screens/Login';
 import Inicio from './screens/Inicio';
 import InformeBateria from './screens/InformeBateria';
@@ -10,6 +12,28 @@ import { CameraProvider } from './context/CameraContext';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
+
+const TabBarBackground = () => {
+  return (
+    <BlurView 
+      tint="dark" 
+      intensity={50} 
+      style={StyleSheet.absoluteFill}
+    />
+  );
+};
+
+const HeaderBackground = () => {
+  return (
+    <View style={StyleSheet.absoluteFill}>
+      <BlurView 
+        tint="dark" 
+        intensity={50} 
+        style={[StyleSheet.absoluteFill, { borderBottomWidth: 1, borderBottomColor: 'rgba(255, 255, 255, 0.1)' }]}
+      />
+    </View>
+  );
+};
 
 function TabNavigator() {
   return (
@@ -30,17 +54,16 @@ function TabNavigator() {
         tabBarInactiveTintColor: 'gray',
         tabBarStyle: {
           position: 'absolute',
-          backgroundColor: 'rgba(55, 55, 55, 0.3)',
           borderTopWidth: 1,
           borderTopColor: 'rgba(255, 255, 255, 0.1)',
           elevation: 0,
           height: 90,
         },
+        tabBarBackground: TabBarBackground,
         tabBarItemStyle: {
           marginTop: 5,
         },
         headerStyle: {
-          backgroundColor: 'rgba(55, 55, 55, 0.3)',
           borderBottomWidth: 1,
           borderBottomColor: 'rgba(255, 255, 255, 0.1)',
           elevation: 0,
@@ -50,6 +73,7 @@ function TabNavigator() {
           fontSize: 18,
         },
         headerTransparent: true,
+        headerBackground: HeaderBackground,
       })}
     >
     <Tab.Screen 

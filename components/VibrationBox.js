@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { StyleSheet, TouchableOpacity, Vibration, Platform } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { BlurView } from 'expo-blur';
 
 // Ya no necesitamos REPEATING_PATTERN para iOS, definimos el intervalo
 const PULSE_INTERVAL_MS = 700; // Intervalo entre vibraciones (ej: 700ms)
@@ -59,6 +60,7 @@ export default function VibrationBox() {
       ]}
       onPress={handlePress}
     >
+      <BlurView intensity={50} tint={isActive ? "light" : "dark"} style={StyleSheet.absoluteFill} />
       <MaterialCommunityIcons 
         name={"vibrate"}
         size={50} 
@@ -70,7 +72,6 @@ export default function VibrationBox() {
 
 const styles = StyleSheet.create({
   caja: {
-    backgroundColor: 'rgba(55, 55, 55, 0.3)',
     width: 170,
     height: 170,
     borderRadius: 25,

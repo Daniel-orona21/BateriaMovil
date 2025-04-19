@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { StyleSheet, TouchableOpacity, Text, View, Platform, Animated, Easing } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Pedometer, Accelerometer } from 'expo-sensors';
+import { BlurView } from 'expo-blur';
 
 export default function PedometerBox() {
   const [isActive, setIsActive] = useState(false);
@@ -244,6 +245,7 @@ export default function PedometerBox() {
       ]}
       onPress={handlePress}
     >
+      <BlurView intensity={50} tint={isActive ? "light" : "dark"} style={StyleSheet.absoluteFill} />
       <View style={styles.container}>
         {/* Número con animación de opacidad y escala */}
         <Animated.Text 
@@ -292,7 +294,6 @@ export default function PedometerBox() {
 
 const styles = StyleSheet.create({
   caja: {
-    backgroundColor: 'rgba(55, 55, 55, 0.3)',
     width: 170,
     height: 170,
     borderRadius: 25,

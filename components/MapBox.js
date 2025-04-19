@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import MapView from 'react-native-maps';
 import Geolocation from '@react-native-community/geolocation';
 import CompassHeading from 'react-native-compass-heading';
+import { BlurView } from 'expo-blur';
 
 export default function MapBox() {
   const [isMapActive, setIsMapActive] = useState(false);
@@ -158,6 +159,10 @@ export default function MapBox() {
         isMapActive && styles.cajaActiva
       ]}
     >
+      {!isMapActive && (
+        <BlurView intensity={50} tint="dark" style={StyleSheet.absoluteFill} />
+      )}
+      
       {isMapActive && location && (
         <MapView
           ref={mapRef}
@@ -192,7 +197,6 @@ export default function MapBox() {
 
 const styles = StyleSheet.create({
   caja: {
-    backgroundColor: 'rgba(55, 55, 55, 0.3)',
     width: 170,
     height: 170,
     borderRadius: 25,

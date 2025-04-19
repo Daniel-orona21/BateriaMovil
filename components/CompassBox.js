@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { View, StyleSheet, TouchableOpacity, Animated, Easing } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { accelerometer, setUpdateIntervalForType, SensorTypes } from "react-native-sensors";
+import { BlurView } from 'expo-blur';
 
 // Configurar intervalo de actualización de sensores fuera del componente
 setUpdateIntervalForType(SensorTypes.accelerometer, 16); // ~60fps
@@ -132,6 +133,7 @@ export default function CompassBox() {
       ]}
       onPress={() => setIsBoxActive(!isBoxActive)}
     >
+      <BlurView intensity={50} tint={isBoxActive ? "light" : "dark"} style={StyleSheet.absoluteFill} />
       <Animated.View
         style={[
           styles.iconContainer,
@@ -155,7 +157,6 @@ export default function CompassBox() {
 
 const styles = StyleSheet.create({
   caja: {
-    backgroundColor: 'rgba(55, 55, 55, 0.3)',
     width: 170,
     height: 170,
     borderRadius: 25,

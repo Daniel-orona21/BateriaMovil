@@ -3,6 +3,7 @@ import { StyleSheet, TouchableOpacity } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useCamera } from '../context/CameraContext';
 import { Camera } from 'react-native-vision-camera';
+import { BlurView } from 'expo-blur';
 
 export default function CameraBox() {
   // Estado para controlar el estilo visual (activo/inactivo)
@@ -51,6 +52,7 @@ export default function CameraBox() {
       ]}
       onPress={handlePress}
     >
+      <BlurView intensity={50} tint={isActive ? "light" : "dark"} style={StyleSheet.absoluteFill} />
       <MaterialCommunityIcons 
         name="camera"
         size={60} 
@@ -62,7 +64,6 @@ export default function CameraBox() {
 
 const styles = StyleSheet.create({
   caja: {
-    backgroundColor: 'rgba(55, 55, 55, 0.3)',
     width: 170,
     height: 170,
     borderRadius: 25,

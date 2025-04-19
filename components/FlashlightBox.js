@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { StyleSheet, TouchableOpacity, Alert, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTorch } from '@drakexorn/expo-torchstate';
+import { BlurView } from 'expo-blur';
 
 export default function FlashlightBox() {
   const [isTorchOn, setTorchStatus] = useTorch();
@@ -32,6 +33,7 @@ export default function FlashlightBox() {
       ]}
       onPress={toggleFlashlight}
     >
+      <BlurView intensity={50} tint={isTorchOn ? "light" : "dark"} style={StyleSheet.absoluteFill} />
       <Ionicons 
         name={isTorchOn ? "flashlight" : "flashlight-outline"} 
         size={50} 
@@ -44,7 +46,6 @@ export default function FlashlightBox() {
 
 const styles = StyleSheet.create({
   caja: {
-    backgroundColor: 'rgba(55, 55, 55, 0.3)',
     width: 170,
     height: 170,
     borderRadius: 25,
