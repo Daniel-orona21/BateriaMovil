@@ -6,6 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import Login from './screens/Login';
 import Inicio from './screens/Inicio';
 import InformeBateria from './screens/InformeBateria';
+import { CameraProvider } from './context/CameraContext';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -72,16 +73,18 @@ function TabNavigator() {
 
 export default function App() {
   return (
-    <NavigationContainer>
-      <Stack.Navigator
-        screenOptions={{
-          headerShown: false,
-        }}
-      >
-        <Stack.Screen name="Login" component={Login} />
-        <Stack.Screen name="MainTabs" component={TabNavigator} />
-      </Stack.Navigator>
-      <StatusBar style="light" />
-    </NavigationContainer>
+    <CameraProvider>
+      <NavigationContainer>
+        <Stack.Navigator
+          screenOptions={{
+            headerShown: false,
+          }}
+        >
+          <Stack.Screen name="Login" component={Login} />
+          <Stack.Screen name="MainTabs" component={TabNavigator} />
+        </Stack.Navigator>
+        <StatusBar style="light" />
+      </NavigationContainer>
+    </CameraProvider>
   );
 }

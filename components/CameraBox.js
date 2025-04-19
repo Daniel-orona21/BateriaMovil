@@ -1,20 +1,44 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StyleSheet, TouchableOpacity } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useCamera } from '../context/CameraContext';
+import { Camera } from 'react-native-vision-camera';
 
 export default function CameraBox() {
   // Estado para controlar el estilo visual (activo/inactivo)
   const [isActive, setIsActive] = useState(false);
+  const [hasPermission, setHasPermission] = useState(false);
+  const { isCameraActive, activateCamera, deactivateCamera } = useCamera();
+
+  // Solicitar permisos al montar el componente
+  useEffect(() => {
+    (async () => {
+      const cameraPermission = await Camera.requestCameraPermission();
+      setHasPermission(cameraPermission === 'granted');
+    })();
+  }, []);
+
+  // Sincronizar estado local con contexto global
+  useEffect(() => {
+    setIsActive(isCameraActive);
+  }, [isCameraActive]);
 
   const handlePress = () => {
     const nextState = !isActive;
     setIsActive(nextState);
     
     if (nextState) {
-      // Código de activación de cámara iría aquí
-      console.log('Cámara activada');
+      // Activar la cámara
+      if (hasPermission) {
+        activateCamera();
+        console.log('Cámara activada');
+      } else {
+        console.log('Sin permiso para la cámara');
+        // Podrías mostrar una alerta o solicitar permiso de nuevo
+      }
     } else {
-      // Código de desactivación de cámara iría aquí
+      // Desactivar la cámara
+      deactivateCamera();
       console.log('Cámara desactivada');
     }
   };

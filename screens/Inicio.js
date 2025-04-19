@@ -1,6 +1,8 @@
 import React, { useEffect } from 'react';
 import { View, StyleSheet, SafeAreaView } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
+import { Camera, useCameraDevice } from 'react-native-vision-camera';
+import { useCamera } from '../context/CameraContext';
 
 // Importar los nuevos componentes
 import CompassBox from '../components/CompassBox'; 
@@ -11,6 +13,8 @@ import PedometerBox from '../components/PedometerBox';
 import CameraBox from '../components/CameraBox';
 
 export default function Inicio({ navigation }) {
+  const { isCameraActive } = useCamera();
+  const device = useCameraDevice('back');
 
   // useEffect para actualizar el título con el nivel de batería
   useEffect(() => {
@@ -29,6 +33,17 @@ export default function Inicio({ navigation }) {
 
   return (
     <View style={styles.container}>
+      {/* Cámara como fondo cuando está activa */}
+      {isCameraActive && device && (
+        <Camera
+          style={StyleSheet.absoluteFill}
+          device={device}
+          isActive={isCameraActive}
+          photo={false}
+          video={false}
+        />
+      )}
+      
       <SafeAreaView style={styles.area}>
         {/* Usar los componentes importados */}
         <CompassBox />

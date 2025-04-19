@@ -1346,6 +1346,27 @@ PODS:
     - Yoga
   - react-native-battery (0.1.13):
     - React
+  - react-native-blur (4.4.1):
+    - DoubleConversion
+    - glog
+    - hermes-engine
+    - RCT-Folly (= 2024.10.14.00)
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - Yoga
   - react-native-compass-heading (2.0.2):
     - DoubleConversion
     - glog
@@ -1810,6 +1831,12 @@ PODS:
   - Torchstate (0.1.2):
     - ExpoModulesCore
   - Turf (2.8.0)
+  - VisionCamera (4.6.4):
+    - VisionCamera/Core (= 4.6.4)
+    - VisionCamera/React (= 4.6.4)
+  - VisionCamera/Core (4.6.4)
+  - VisionCamera/React (4.6.4):
+    - React-Core
   - Yoga (0.0.0)
   - ZXingObjC/Core (3.6.9)
   - ZXingObjC/OneD (3.6.9):
@@ -1870,6 +1897,7 @@ DEPENDENCIES:
   - React-Mapbuffer (from `../node_modules/react-native/ReactCommon`)
   - React-microtasksnativemodule (from `../node_modules/react-native/ReactCommon/react/nativemodule/microtasks`)
   - react-native-battery (from `../node_modules/react-native-battery`)
+  - "react-native-blur (from `../node_modules/@react-native-community/blur`)"
   - react-native-compass-heading (from `../node_modules/react-native-compass-heading`)
   - "react-native-geolocation (from `../node_modules/@react-native-community/geolocation`)"
   - react-native-geolocation-service (from `../node_modules/react-native-geolocation-service`)
@@ -1908,6 +1936,7 @@ DEPENDENCIES:
   - RNScreens (from `../node_modules/react-native-screens`)
   - RNSensors (from `../node_modules/react-native-sensors`)
   - "Torchstate (from `../node_modules/@drakexorn/expo-torchstate/ios`)"
+  - VisionCamera (from `../node_modules/react-native-vision-camera`)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
 SPEC REPOS:
@@ -2022,6 +2051,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon/react/nativemodule/microtasks"
   react-native-battery:
     :path: "../node_modules/react-native-battery"
+  react-native-blur:
+    :path: "../node_modules/@react-native-community/blur"
   react-native-compass-heading:
     :path: "../node_modules/react-native-compass-heading"
   react-native-geolocation:
@@ -2098,6 +2129,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-sensors"
   Torchstate:
     :path: "../node_modules/@drakexorn/expo-torchstate/ios"
+  VisionCamera:
+    :path: "../node_modules/react-native-vision-camera"
   Yoga:
     :path: "../node_modules/react-native/ReactCommon/yoga"
 
@@ -2156,6 +2189,7 @@ SPEC CHECKSUMS:
   React-Mapbuffer: 6efad4a606c1fae7e4a93385ee096681ef0300dc
   React-microtasksnativemodule: a645237a841d733861c70b69908ab4a1707b52ad
   react-native-battery: c19aa98c6a1d5cd18a57a470cabfe9f05e1abfa4
+  react-native-blur: 20985c2224fbf2e9ece7f88d608b7b20e506b964
   react-native-compass-heading: 6c5bc719ce1acd4bd20bc77cd75332fc64ed8433
   react-native-geolocation: 89326371383135c84474ac156e8604196be8a40f
   react-native-geolocation-service: 608e1da71a1ac31b4de64d9ef2815f697978c55b
@@ -2196,6 +2230,7 @@ SPEC CHECKSUMS:
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
   Torchstate: 5c69be64dabb0957f66555aeed540754d011c427
   Turf: aa2ede4298009639d10db36aba1a7ebaad072a5e
+  VisionCamera: b5c2b3c45e641102902a5194af11dc532805221e
   Yoga: 40f19fff64dce86773bf8b602c7070796c007970
   ZXingObjC: 8898711ab495761b2dbbdec76d90164a6d7e14c5
 
