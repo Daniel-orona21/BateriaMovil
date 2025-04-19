@@ -60,10 +60,8 @@ export default function CompassBox() {
       springAnimation.current.stop();
     }
 
-    // Mantener la posición actual al activar
-    const currentX = iconPosition.x._value;
-    const currentY = iconPosition.y._value;
-    iconPosition.setValue({ x: currentX, y: currentY });
+    // Siempre empezar desde el centro al activar
+    iconPosition.setValue({ x: 0, y: 0 });
     
     velocity.current = { x: 0, y: 0 };
     lastUpdate.current = Date.now();
@@ -127,13 +125,10 @@ export default function CompassBox() {
 
   return (
     <TouchableOpacity 
-      style={[
-        styles.caja,
-        isBoxActive && styles.cajaActiva
-      ]}
+      style={styles.caja}
       onPress={() => setIsBoxActive(!isBoxActive)}
     >
-      <BlurView intensity={50} tint={isBoxActive ? "light" : "dark"} style={StyleSheet.absoluteFill} />
+      <BlurView intensity={50} tint="dark" style={StyleSheet.absoluteFill} />
       <Animated.View
         style={[
           styles.iconContainer,
@@ -148,7 +143,7 @@ export default function CompassBox() {
         <Ionicons 
           name="compass" 
           size={50} 
-          color={isBoxActive ? "#000" : "#fff"} 
+          color="#fff" 
         />
       </Animated.View>
     </TouchableOpacity>
@@ -159,13 +154,10 @@ const styles = StyleSheet.create({
   caja: {
     width: 170,
     height: 170,
-    borderRadius: 25,
+    borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
     overflow: 'hidden',
-  },
-  cajaActiva: {
-    backgroundColor: 'rgba(255, 255, 255, 0.75)',
   },
   iconContainer: {
     position: 'absolute',

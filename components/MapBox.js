@@ -199,7 +199,7 @@ const styles = StyleSheet.create({
   caja: {
     width: 170,
     height: 170,
-    borderRadius: 25,
+    borderRadius: 20,
     overflow: 'hidden',
     position: 'relative',
   },
