@@ -7,7 +7,7 @@ export default function Login({ navigation }) {
   return (
     <View style={styles.container}>
       <Image 
-        source={require('../assets/IMG_1226.png')} 
+        source={require('../assets/IMG_1228.png')} 
         style={StyleSheet.absoluteFill}
         contentFit="cover"
         cachePolicy="memory-disk"
@@ -44,7 +44,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(55, 55, 55, 0.3)',
     paddingHorizontal: 30,
     paddingVertical: 15,
-    borderRadius: 25,
+    borderRadius: 20,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.1)',
   },

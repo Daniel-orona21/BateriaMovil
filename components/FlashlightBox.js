@@ -1,12 +1,54 @@
-import React, { useEffect } from 'react';
-import { StyleSheet, TouchableOpacity, Alert, Platform, View } from 'react-native';
+import React, { useEffect, memo, forwardRef, useState } from 'react';
+import { StyleSheet, TouchableOpacity, Alert, Platform, View, Dimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTorch } from '@drakexorn/expo-torchstate';
 import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
 
+// Componente con rotación aplicada directamente en las coordenadas de renderizado 
+// para garantizar que siempre se aplique independientemente del ciclo de vida
+const FixedRotationIcon = forwardRef(({ name, size, color, style }, ref) => {
+  // Forzar renderizado con rotación específica
+  const [mounted] = useState(true);
+  
+  return (
+    <View 
+      ref={ref}
+      style={[
+        {
+          transform: [{ rotate: '-45deg' }],
+          width: size,
+          height: size,
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 10
+        },
+        style
+      ]}
+      // Clave única para forzar renderizado completo
+      key={`fixed-rotation-icon-${name}-${mounted ? 'mounted' : 'unmounted'}`}
+    >
+      <Ionicons name={name} size={size} color={color} />
+    </View>
+  );
+});
+
 export default function FlashlightBox() {
   const [isTorchOn, setTorchStatus] = useTorch();
+  const [renderKey, setRenderKey] = useState(0);
+
+  // Forzar rerenderizado completo cuando el componente se vuelve a montar
+  useEffect(() => {
+    // Incrementar el renderKey para forzar un renderizado completo
+    setRenderKey(prev => prev + 1);
+    
+    return () => {
+      if (isTorchOn) {
+        setTorchStatus(false);
+      }
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const toggleFlashlight = () => {
     try {
@@ -17,19 +59,11 @@ export default function FlashlightBox() {
     }
   };
 
-  useEffect(() => {
-    return () => {
-      if (isTorchOn) {
-        setTorchStatus(false);
-      }
-    };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isTorchOn]);
-
   return (
     <TouchableOpacity 
       style={styles.caja}
       onPress={toggleFlashlight}
+      key={`flashlight-box-${renderKey}`}
     >
       <BlurView intensity={50} tint="dark" style={StyleSheet.absoluteFill} />
       
@@ -42,12 +76,11 @@ export default function FlashlightBox() {
           </View>
         )}
         
-        {/* Icono de la linterna */}
-        <Ionicons 
+        {/* Icono de la linterna con rotación fija garantizada */}
+        <FixedRotationIcon 
           name={isTorchOn ? "flashlight" : "flashlight-outline"} 
           size={50} 
-          color="#fff" 
-          style={styles.flashlightIcon} 
+          color="#fff"
         />
       </View>
     </TouchableOpacity>
@@ -69,10 +102,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     position: 'relative',
-  },
-  flashlightIcon: {
-    transform: [{ rotate: '-45deg' }],
-    zIndex: 2,
   },
   lightConeWrapper: {
     position: 'absolute',

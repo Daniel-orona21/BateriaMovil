@@ -6,7 +6,7 @@ export default function InformeBateria({ navigation }) {
   return (
     <View style={styles.container}>
       <Image 
-        source={require('../assets/IMG_1225.png')} 
+        source={require('../assets/IMG_1229.jpg')} 
         style={StyleSheet.absoluteFill}
         contentFit="cover"
         cachePolicy="memory-disk"

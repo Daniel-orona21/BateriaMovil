@@ -29,8 +29,8 @@ Image.transition = 0; // Desactivar transiciones para prevenir flashes
 
 // Array de imágenes a precargar
 const imagesToPreload = [
-  require('./assets/IMG_1225.png'),
-  require('./assets/IMG_1226.png')
+  require('./assets/IMG_1229.jpg'),
+  require('./assets/IMG_1228.png')
 ];
 
 const Tab = createBottomTabNavigator();
