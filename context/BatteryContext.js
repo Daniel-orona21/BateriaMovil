@@ -188,6 +188,7 @@ export const BatteryProvider = ({ children }) => {
           const lastEntry = prev.length > 0 ? prev[prev.length - 1] : null;
           const shouldAddEntry = !lastEntry || 
                                lastEntry.level !== apiLevelPercent || 
+                               lastEntry.isCharging !== charging ||
                                (timestamp - new Date(lastEntry.timestamp)) > 300000; // 5 minutos
           
           if (shouldAddEntry) {
@@ -205,12 +206,35 @@ export const BatteryProvider = ({ children }) => {
       }
     };
 
-    // Obtener información inmediatamente y luego cada 30 segundos
+    // Obtener información inmediatamente
     fetchBatteryInfo();
-    const intervalId = setInterval(fetchBatteryInfo, 30000);
     
-    return () => clearInterval(intervalId);
-  }, []);
+    // Configurar un intervalo más corto (5 segundos) para actualizar más rápido
+    const intervalId = setInterval(fetchBatteryInfo, 5000);
+    
+    // Configurar un intervalo más frecuente para detectar cambios de estado de carga
+    // Esta es una alternativa a los event listeners que no están disponibles
+    const chargeDetectionId = setInterval(async () => {
+      try {
+        const charging = await DeviceInfo.isBatteryCharging();
+        
+        // Si detectamos un cambio en el estado de carga, actualizar inmediatamente
+        if (charging !== isCharging) {
+          console.log('Cambio detectado en estado de carga:', charging ? 'Cargando' : 'Desconectado');
+          setIsCharging(charging);
+          fetchBatteryInfo(); // Actualizar todos los datos
+        }
+      } catch (error) {
+        console.error('Error al verificar estado de carga:', error);
+      }
+    }, 1000); // Verificar cada segundo para detectar cambios rápidos
+    
+    // Limpiar los intervalos al desmontar
+    return () => {
+      clearInterval(intervalId);
+      clearInterval(chargeDetectionId);
+    };
+  }, [isCharging]); // Añadir isCharging como dependencia para que la comparación funcione correctamente
 
   // Registrar módulos externos (para módulos que no utilizan su propio contexto)
   const registerModuleState = useCallback((moduleName, isActive) => {
