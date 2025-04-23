@@ -1,10 +1,11 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { View, StyleSheet, TouchableOpacity, Animated, Easing, Platform, PermissionsAndroid } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import MapView from 'react-native-maps';
 import Geolocation from '@react-native-community/geolocation';
 import CompassHeading from 'react-native-compass-heading';
 import { BlurView } from 'expo-blur';
+import { useBattery } from '../context/BatteryContext';
 
 export default function MapBox() {
   const [isMapActive, setIsMapActive] = useState(false);
@@ -13,8 +14,25 @@ export default function MapBox() {
   const locationWatcher = useRef(null);
   const mapIconRotation = useRef(new Animated.Value(0)).current;
   const mapRef = useRef(null); // Referencia para el MapView
+  const isMapActiveRef = useRef(false); // Para evitar referencias en efectos
+  const { registerModuleState } = useBattery();
 
-  const requestLocationPermission = async () => {
+  // Actualizar la ref cuando cambia isMapActive
+  useEffect(() => {
+    isMapActiveRef.current = isMapActive;
+  }, [isMapActive]);
+
+  // Memoize the registration function to prevent infinite loops
+  const registerWithBattery = useCallback((isActive) => {
+    registerModuleState('map', isActive);
+  }, [registerModuleState]);
+
+  // Register with battery context
+  useEffect(() => {
+    registerWithBattery(isMapActive);
+  }, [isMapActive, registerWithBattery]);
+
+  const requestLocationPermission = useCallback(async () => {
     if (Platform.OS === 'ios') {
       Geolocation.requestAuthorization();
       return true;
@@ -36,9 +54,9 @@ export default function MapBox() {
       console.warn(err);
       return false;
     }
-  };
+  }, []);
 
-  const startSensorsForMap = async () => {
+  const startSensorsForMap = useCallback(async () => {
     const hasPermission = await requestLocationPermission();
     if (!hasPermission) return;
 
@@ -57,16 +75,17 @@ export default function MapBox() {
         { enableHighAccuracy: true, distanceFilter: 1, maximumAge: 1000, timeout: 20000 }
       );
     }
-  };
+  }, [requestLocationPermission]);
 
-  const stopSensorsForMap = () => {
+  const stopSensorsForMap = useCallback(() => {
     // Detener seguimiento de ubicación
     if (locationWatcher.current) {
       Geolocation.clearWatch(locationWatcher.current);
       locationWatcher.current = null;
     }
-  };
+  }, []);
 
+  // Manejar efectos de la cámara del mapa solo cuando cambia isMapActive
   useEffect(() => {
     if (isMapActive) {
       startSensorsForMap();
@@ -74,25 +93,24 @@ export default function MapBox() {
       stopSensorsForMap();
     }
 
-    // Asegurarse de detener los sensores (Geolocation) cuando el componente se desmonte
     return () => {
       stopSensorsForMap();
     };
-  }, [isMapActive]);
+  }, [isMapActive, startSensorsForMap, stopSensorsForMap]);
 
+  // Separate effect for compass heading to avoid too many dependencies
   useEffect(() => {
     const handleCompassUpdate = (data) => {
+      if (!isMapActiveRef.current) return; // Use ref to check current state
+      
       const newHeading = typeof data === 'object' ? data.heading : data;
       if (typeof newHeading === 'number' && !isNaN(newHeading) && newHeading >= 0) {
         setHeading(newHeading);
-      } else {
-        // console.log("Invalid compass data received:", data);
       }
     };
 
+    // Start compass only when map is active
     if (isMapActive) {
-      startSensorsForMap();
-
       const degree_update_rate = 1;
       CompassHeading.start(degree_update_rate, handleCompassUpdate)
         .then(() => {
@@ -101,38 +119,36 @@ export default function MapBox() {
         .catch(error => {
           console.error('Error starting CompassHeading (MapBox):', error);
         });
-
     } else {
-      stopSensorsForMap();
       CompassHeading.stop();
-      console.log('CompassHeading stopped (MapBox)');
     }
 
-    // Función de limpieza original para desmontaje del componente
     return () => {
-      stopSensorsForMap();
       CompassHeading.stop();
-      console.log('Sensors cleaned up on unmount (MapBox)');
     };
   }, [isMapActive]);
 
+  // Separate effect for map camera animation
   useEffect(() => {
     if (isMapActive && mapRef.current && location) {
-      mapRef.current.animateCamera(
-        {
-          center: {
-             latitude: location.latitude,
-             longitude: location.longitude,
+      try {
+        mapRef.current.animateCamera(
+          {
+            center: {
+               latitude: location.latitude,
+               longitude: location.longitude,
+            },
+            heading: heading,
           },
-          heading: heading,
-          // pitch: 45,
-          // zoom: 18,
-        },
-        { duration: 250 }
-      );
+          { duration: 250 }
+        );
+      } catch (error) {
+        console.log('Error animating map camera:', error);
+      }
     }
   }, [heading, isMapActive, location]);
 
+  // Icon rotation animation
   useEffect(() => {
     Animated.timing(mapIconRotation, {
       toValue: isMapActive ? 1 : 0,
@@ -140,16 +156,19 @@ export default function MapBox() {
       easing: Easing.linear,
       useNativeDriver: true,
     }).start();
-  }, [isMapActive]);
+  }, [isMapActive, mapIconRotation]);
 
-  const mapIconRotateInterpolate = mapIconRotation.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['0deg', '180deg'],
-  });
+  // Memoize the interpolation to prevent recalculation
+  const mapIconRotateInterpolate = useMemo(() => {
+    return mapIconRotation.interpolate({
+      inputRange: [0, 1],
+      outputRange: ['0deg', '180deg'],
+    });
+  }, [mapIconRotation]);
 
-  const handlePress = () => {
-    setIsMapActive(!isMapActive);
-  };
+  const handlePress = useCallback(() => {
+    setIsMapActive(prev => !prev);
+  }, []);
 
   return (
     <View
@@ -188,7 +207,7 @@ export default function MapBox() {
           <Ionicons
             name="location"
             size={50}
-            color={isMapActive ? '#fff' : '#fff'}
+            color="#fff"
           />
         </Animated.View>
       </TouchableOpacity>

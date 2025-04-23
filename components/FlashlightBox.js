@@ -1,9 +1,10 @@
-import React, { useEffect, memo, forwardRef, useState } from 'react';
+import React, { useEffect, memo, forwardRef, useState, useCallback } from 'react';
 import { StyleSheet, TouchableOpacity, Alert, Platform, View, Dimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTorch } from '@drakexorn/expo-torchstate';
 import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useBattery } from '../context/BatteryContext';
 
 // Componente con rotación aplicada directamente en las coordenadas de renderizado 
 // para garantizar que siempre se aplique independientemente del ciclo de vida
@@ -36,6 +37,17 @@ const FixedRotationIcon = forwardRef(({ name, size, color, style }, ref) => {
 export default function FlashlightBox() {
   const [isTorchOn, setTorchStatus] = useTorch();
   const [renderKey, setRenderKey] = useState(0);
+  const { registerModuleState } = useBattery();
+
+  // Memoize the registration function to prevent infinite loops
+  const registerWithBattery = useCallback((isActive) => {
+    registerModuleState('flashlight', isActive);
+  }, [registerModuleState]);
+
+  // Register with battery context
+  useEffect(() => {
+    registerWithBattery(isTorchOn);
+  }, [isTorchOn, registerWithBattery]);
 
   // Forzar rerenderizado completo cuando el componente se vuelve a montar
   useEffect(() => {

@@ -11,6 +11,7 @@ import Login from './screens/Login';
 import Inicio from './screens/Inicio';
 import InformeBateria from './screens/InformeBateria';
 import { CameraProvider } from './context/CameraContext';
+import { BatteryProvider } from './context/BatteryContext';
 
 // Fix font errors by disabling font scaling and applying maximum patches
 Text.defaultProps = Text.defaultProps || {};
@@ -162,19 +163,21 @@ function AppContent() {
 
   return (
     <CameraProvider>
-      <NavigationContainer theme={customTheme} fallback={<View style={{flex:1, backgroundColor:'#000'}}/>}>
-        <Stack.Navigator
-          screenOptions={{
-            headerShown: false,
-            ...screenOptions,
-            animation: 'fade',
-          }}
-        >
-          <Stack.Screen name="Login" component={Login} />
-          <Stack.Screen name="MainTabs" component={TabNavigator} />
-        </Stack.Navigator>
-        <StatusBar style="light" />
-      </NavigationContainer>
+      <BatteryProvider>
+        <NavigationContainer theme={customTheme} fallback={<View style={{flex:1, backgroundColor:'#000'}}/>}>
+          <Stack.Navigator
+            screenOptions={{
+              headerShown: false,
+              ...screenOptions,
+              animation: 'fade',
+            }}
+          >
+            <Stack.Screen name="Login" component={Login} />
+            <Stack.Screen name="MainTabs" component={TabNavigator} />
+          </Stack.Navigator>
+          <StatusBar style="light" />
+        </NavigationContainer>
+      </BatteryProvider>
     </CameraProvider>
   );
 }

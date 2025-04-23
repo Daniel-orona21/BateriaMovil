@@ -1,14 +1,16 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { StyleSheet, TouchableOpacity, Text, View, Platform, Animated, Easing } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Pedometer, Accelerometer } from 'expo-sensors';
 import { BlurView } from 'expo-blur';
+import { useBattery } from '../context/BatteryContext';
 
 export default function PedometerBox() {
   const [isActive, setIsActive] = useState(false);
   const [stepCount, setStepCount] = useState(0);
   const [isPedometerAvailable, setIsPedometerAvailable] = useState(null);
   const [isWalking, setIsWalking] = useState(false);
+  const { registerModuleState } = useBattery();
   
   // Referencias
   const intervalRef = useRef(null);
@@ -24,6 +26,16 @@ export default function PedometerBox() {
   const iconPositionAnim = useRef(new Animated.Value(0)).current;
   const numberOpacityAnim = useRef(new Animated.Value(0)).current;
   const numberScaleAnim = useRef(new Animated.Value(0.5)).current;
+
+  // Memoize the registration function to prevent infinite loops
+  const registerWithBattery = useCallback((isActive) => {
+    registerModuleState('pedometer', isActive);
+  }, [registerModuleState]);
+
+  // Register with battery context
+  useEffect(() => {
+    registerWithBattery(isActive);
+  }, [isActive, registerWithBattery]);
 
   // Comprobar disponibilidad al inicio
   useEffect(() => {
@@ -104,7 +116,7 @@ export default function PedometerBox() {
         })
       ]).start();
     }
-  }, [isActive]);
+  }, [isActive, iconSizeAnim, iconPositionAnim, numberOpacityAnim, numberScaleAnim]);
   
   const checkAvailability = async () => {
     try {
@@ -128,7 +140,7 @@ export default function PedometerBox() {
   };
   
   // Suscribirse al acelerómetro para detectar movimiento
-  const subscribeToAccelerometer = () => {
+  const subscribeToAccelerometer = useCallback(() => {
     // Configurar el intervalo de actualización
     Accelerometer.setUpdateInterval(200); // 200ms = 5 veces por segundo
     
@@ -143,25 +155,25 @@ export default function PedometerBox() {
           setIsWalking(true);
           // Incrementar un contador temporal para feedback visual inmediato
           tempStepCountRef.current += 1;
-          setStepCount(prevCount => tempStepCountRef.current);
+          setStepCount(tempStepCountRef.current);
         }
       } else {
         // No hay movimiento significativo
         setIsWalking(false);
       }
     });
-  };
+  }, [isWalking]);
   
   // Cancelar suscripción al acelerómetro
-  const unsubscribeFromAccelerometer = () => {
+  const unsubscribeFromAccelerometer = useCallback(() => {
     if (accelSubscription.current) {
       accelSubscription.current.remove();
       accelSubscription.current = null;
     }
-  };
+  }, []);
 
   // Iniciar el contador de pasos
-  const startPedometer = async () => {
+  const startPedometer = useCallback(async () => {
     if (!isPedometerAvailable) return;
     
     try {
@@ -207,10 +219,10 @@ export default function PedometerBox() {
     } catch (error) {
       console.log('Error al iniciar el podómetro:', error);
     }
-  };
+  }, [isPedometerAvailable, subscribeToAccelerometer]);
 
   // Detener el contador
-  const stopPedometer = () => {
+  const stopPedometer = useCallback(() => {
     // Detener el intervalo
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
@@ -223,19 +235,22 @@ export default function PedometerBox() {
     // Limpiar referencias
     startTimeRef.current = null;
     setIsWalking(false);
-  };
+  }, [unsubscribeFromAccelerometer]);
 
   // Manejar activación/desactivación
-  const handlePress = () => {
-    const nextState = !isActive;
-    setIsActive(nextState);
-
-    if (nextState) {
-      startPedometer();
-    } else {
-      stopPedometer();
-    }
-  };
+  const handlePress = useCallback(() => {
+    setIsActive(prevState => {
+      const nextState = !prevState;
+      
+      if (nextState) {
+        startPedometer();
+      } else {
+        stopPedometer();
+      }
+      
+      return nextState;
+    });
+  }, [startPedometer, stopPedometer]);
 
   return (
     <TouchableOpacity 

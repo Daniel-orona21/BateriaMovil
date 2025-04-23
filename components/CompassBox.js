@@ -1,8 +1,9 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { View, StyleSheet, TouchableOpacity, Animated, Easing } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { accelerometer, setUpdateIntervalForType, SensorTypes } from "react-native-sensors";
 import { BlurView } from 'expo-blur';
+import { useBattery } from '../context/BatteryContext';
 
 // Configurar intervalo de actualización de sensores fuera del componente
 setUpdateIntervalForType(SensorTypes.accelerometer, 16); // ~60fps
@@ -15,9 +16,27 @@ export default function CompassBox() {
   const animationFrame = useRef(null);
   const lastUpdate = useRef(Date.now());
   const springAnimation = useRef(null);
+  const isActiveRef = useRef(false); // Para evitar referencias en efectos
+  const { registerModuleState } = useBattery();
 
-  const updatePosition = () => {
-    if (!isBoxActive) return;
+  // Actualizar la ref cuando cambia el estado
+  useEffect(() => {
+    isActiveRef.current = isBoxActive;
+  }, [isBoxActive]);
+
+  // Memoize the registration function to prevent infinite loops
+  const registerWithBattery = useCallback((isActive) => {
+    registerModuleState('compass', isActive);
+  }, [registerModuleState]);
+
+  // Register with battery context - use isBoxActive in useEffect dependency, not a function that uses it
+  useEffect(() => {
+    registerWithBattery(isBoxActive);
+  }, [isBoxActive, registerWithBattery]);
+
+  // Memoize the position calculation to prevent recreations
+  const updatePosition = useCallback(() => {
+    if (!isActiveRef.current) return;
 
     const now = Date.now();
     const dt = (now - lastUpdate.current) / 1000; // tiempo en segundos
@@ -52,9 +71,10 @@ export default function CompassBox() {
     iconPosition.setValue({ x: newX, y: newY });
     
     animationFrame.current = requestAnimationFrame(updatePosition);
-  };
+  }, [iconPosition]);
 
-  const startAccelerometer = () => {
+  // Iniciar acelerómetro y animación
+  const startAccelerometer = useCallback(() => {
     // Cancelar cualquier animación de spring pendiente
     if (springAnimation.current) {
       springAnimation.current.stop();
@@ -66,19 +86,25 @@ export default function CompassBox() {
     velocity.current = { x: 0, y: 0 };
     lastUpdate.current = Date.now();
 
+    // Iniciar la suscripción al acelerómetro
     if (!accelSubscription.current) {
       accelSubscription.current = accelerometer.subscribe(({ x, y }) => {
+        // Solo procesar si el componente está activo (usar ref para evitar dependencias)
+        if (!isActiveRef.current) return;
+        
         // Convertir la inclinación en aceleración
         const sensitivity = 400;
-        velocity.current.x += x * sensitivity * 0.036; // 0.016 es aproximadamente 1/60 para 60fps
+        velocity.current.x += x * sensitivity * 0.036;
         velocity.current.y -= y * sensitivity * 0.036; // Invertimos Y para movimiento natural
       });
     }
 
+    // Iniciar el loop de animación
     updatePosition();
-  };
+  }, [iconPosition, updatePosition]);
 
-  const stopAccelerometer = () => {
+  // Detener acelerómetro y animación
+  const stopAccelerometer = useCallback(() => {
     if (accelSubscription.current) {
       accelSubscription.current.unsubscribe();
       accelSubscription.current = null;
@@ -92,7 +118,7 @@ export default function CompassBox() {
     // Resetear velocidad
     velocity.current = { x: 0, y: 0 };
 
-    // Guardar la animación de spring para poder cancelarla si es necesario
+    // Volver al centro con animación
     springAnimation.current = Animated.spring(iconPosition, {
       toValue: { x: 0, y: 0 },
       useNativeDriver: true,
@@ -101,8 +127,9 @@ export default function CompassBox() {
     });
     
     springAnimation.current.start();
-  };
+  }, [iconPosition]);
 
+  // Efecto para manejar activación/desactivación
   useEffect(() => {
     if (isBoxActive) {
       startAccelerometer();
@@ -110,23 +137,31 @@ export default function CompassBox() {
       stopAccelerometer();
     }
 
+    // Limpieza al desmontar
     return () => {
       if (accelSubscription.current) {
         accelSubscription.current.unsubscribe();
+        accelSubscription.current = null;
       }
       if (animationFrame.current) {
         cancelAnimationFrame(animationFrame.current);
+        animationFrame.current = null;
       }
       if (springAnimation.current) {
         springAnimation.current.stop();
       }
     };
-  }, [isBoxActive]);
+  }, [isBoxActive, startAccelerometer, stopAccelerometer]);
+
+  // Manejar pulsación con useCallback para estabilidad
+  const handlePress = useCallback(() => {
+    setIsBoxActive(prev => !prev);
+  }, []);
 
   return (
     <TouchableOpacity 
       style={styles.caja}
-      onPress={() => setIsBoxActive(!isBoxActive)}
+      onPress={handlePress}
     >
       <BlurView intensity={50} tint="dark" style={StyleSheet.absoluteFill} />
       <Animated.View

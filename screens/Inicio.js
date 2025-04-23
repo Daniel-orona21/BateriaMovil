@@ -77,17 +77,22 @@ export default function Inicio({ navigation }) {
 
   // useEffect para actualizar el título con el nivel de batería
   useEffect(() => {
+    let isMounted = true;
     const interval = setInterval(async () => {
       try {
+        if (!isMounted) return;
         const level = await DeviceInfo.getBatteryLevel();
         const porcentaje = (level * 100).toFixed(0);
         navigation.setOptions({ title: `Batería al ${porcentaje}%` });
       } catch (error) {
         console.error('Error al obtener el nivel de batería:', error);
       }
-    }, 1000);
+    }, 10000); // Reduced update frequency from 1s to 10s
 
-    return () => clearInterval(interval);
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
   }, [navigation]);
 
   return (

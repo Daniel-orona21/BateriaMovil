@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { StyleSheet, TouchableOpacity, Animated, View } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useCamera } from '../context/CameraContext';
+import { useBattery } from '../context/BatteryContext';
 import { Camera } from 'react-native-vision-camera';
 import { BlurView } from 'expo-blur';
 
@@ -10,10 +11,16 @@ export default function CameraBox() {
   const [isActive, setIsActive] = useState(false);
   const [hasPermission, setHasPermission] = useState(false);
   const { isCameraActive, activateCamera, deactivateCamera } = useCamera();
+  const { registerModuleState } = useBattery();
   
   // Valores de animación para transición de iconos
   const fadeIn = useRef(new Animated.Value(1)).current;
   const fadeOut = useRef(new Animated.Value(0)).current;
+
+  // Memoize the registration function to prevent infinite loops
+  const registerWithBattery = useCallback((isActive) => {
+    registerModuleState('camera', isActive);
+  }, [registerModuleState]);
 
   // Solicitar permisos al montar el componente
   useEffect(() => {
@@ -27,6 +34,11 @@ export default function CameraBox() {
   useEffect(() => {
     setIsActive(isCameraActive);
   }, [isCameraActive]);
+  
+  // Register with battery context
+  useEffect(() => {
+    registerWithBattery(isActive);
+  }, [isActive, registerWithBattery]);
   
   // Animación cuando cambia el estado
   useEffect(() => {
@@ -59,13 +71,11 @@ export default function CameraBox() {
         })
       ]).start();
     }
-  }, [isActive]);
+  }, [isActive, fadeIn, fadeOut]);
 
-  const handlePress = () => {
-    const nextState = !isActive;
-    setIsActive(nextState);
-    
-    if (nextState) {
+  // La cámara se debe controlar a través del contexto, no del estado local directamente
+  const handlePress = useCallback(() => {
+    if (!isActive) {
       // Activar la cámara
       if (hasPermission) {
         activateCamera();
@@ -79,7 +89,7 @@ export default function CameraBox() {
       deactivateCamera();
       console.log('Cámara desactivada');
     }
-  };
+  }, [isActive, hasPermission, activateCamera, deactivateCamera]);
 
   return (
     <TouchableOpacity 
