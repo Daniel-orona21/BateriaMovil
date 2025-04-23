@@ -2,21 +2,22 @@ import React from 'react';
 import { View, Text, StyleSheet, Dimensions } from 'react-native';
 import { PieChart } from 'react-native-chart-kit';
 import { useBattery } from '../context/BatteryContext';
+import { BlurView } from 'expo-blur';
 
 const { width } = Dimensions.get('window');
 
-// Define colors for each module
+// Definir colores para cada módulo
 const MODULE_COLORS = {
-  baseline: '#808080', // Gray
-  camera: '#FF6384',   // Red
-  compass: '#36A2EB',  // Blue
-  flashlight: '#FFCE56', // Yellow
-  map: '#4BC0C0',      // Turquoise
-  pedometer: '#9966FF', // Purple
-  vibration: '#FF9F40'  // Orange
+  baseline: '#808080', // Gris
+  camera: '#FF6384',   // Rojo
+  compass: '#36A2EB',  // Azul
+  flashlight: '#FFCE56', // Amarillo
+  map: '#4BC0C0',      // Turquesa
+  pedometer: '#9966FF', // Púrpura
+  vibration: '#FF9F40'  // Naranja
 };
 
-// Define friendly names for each module
+// Definir nombres amigables para cada módulo
 const MODULE_NAMES = {
   baseline: 'Base',
   camera: 'Cámara',
@@ -30,10 +31,10 @@ const MODULE_NAMES = {
 export default function ModuleConsumptionChart() {
   const { activeModules, consumptionRates } = useBattery();
   
-  // Prepare data for the chart
+  // Preparar datos para el gráfico
   const chartData = [];
   
-  // Always include baseline
+  // Siempre incluir línea base
   chartData.push({
     name: MODULE_NAMES.baseline,
     consumption: consumptionRates.baseline,
@@ -42,7 +43,7 @@ export default function ModuleConsumptionChart() {
     legendFontSize: 12
   });
   
-  // Add active modules
+  // Añadir módulos activos
   Object.entries(activeModules).forEach(([module, isActive]) => {
     if (isActive && module !== 'baseline') {
       chartData.push({
@@ -55,14 +56,14 @@ export default function ModuleConsumptionChart() {
     }
   });
   
-  // If no modules are active, show all modules in an "inactive" state
+  // Si no hay módulos activos, mostrar todos los módulos en estado "inactivo"
   if (chartData.length === 1) {
     Object.entries(consumptionRates).forEach(([module, rate]) => {
       if (module !== 'baseline') {
         chartData.push({
           name: `${MODULE_NAMES[module]}`,
           consumption: 0,
-          color: MODULE_COLORS[module] + '40', // Add transparency
+          color: MODULE_COLORS[module] + '40', // Añadir transparencia
           legendFontColor: '#999',
           legendFontSize: 12
         });
@@ -70,10 +71,10 @@ export default function ModuleConsumptionChart() {
     });
   }
   
-  // Convert consumption to percentages for the pie chart
+  // Convertir consumo a porcentajes para el gráfico circular
   const data = chartData.map(item => ({
     ...item,
-    population: item.consumption, // The PieChart component uses 'population' as the value
+    population: item.consumption, // El componente PieChart usa 'population' como valor
     legendFontColor: item.legendFontColor,
     legendFontSize: item.legendFontSize,
     color: item.color,
@@ -82,6 +83,7 @@ export default function ModuleConsumptionChart() {
 
   return (
     <View style={styles.container}>
+      <BlurView intensity={50} tint="dark" style={[StyleSheet.absoluteFill, styles.blurView]} />
       <Text style={styles.title}>Consumo por Módulo</Text>
       <PieChart
         data={data}
@@ -104,8 +106,12 @@ const styles = StyleSheet.create({
   container: {
     marginBottom: 24,
     padding: 16,
-    borderRadius: 16,
+    borderRadius: 20,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    overflow: 'hidden',
+  },
+  blurView: {
+    borderRadius: 20,
   },
   title: {
     fontSize: 18,

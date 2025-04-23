@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useBattery } from '../context/BatteryContext';
+import { BlurView } from 'expo-blur';
 
 export default function BatterySummary() {
   const { 
@@ -14,7 +15,7 @@ export default function BatterySummary() {
     consumptionRates
   } = useBattery();
   
-  // Format time remaining to human-readable format
+  // Formatear tiempo restante a formato legible por humanos
   const formatTimeRemaining = (hours) => {
     if (hours === 0) return '-';
     
@@ -30,10 +31,10 @@ export default function BatterySummary() {
     }
   };
   
-  // Count active modules
+  // Contar módulos activos
   const activeCount = Object.values(activeModules).filter(isActive => isActive).length;
   
-  // Determine battery icon based on level and charging state
+  // Determinar el icono de batería según nivel y estado de carga
   const getBatteryIcon = () => {
     if (isCharging) {
       return 'battery-charging';
@@ -48,7 +49,7 @@ export default function BatterySummary() {
     }
   };
   
-  // Determine color based on battery level
+  // Determinar color basado en el nivel de batería
   const getBatteryColor = () => {
     if (batteryLevel <= 0.2) {
       return '#FF3B30'; // Rojo para batería baja
@@ -61,6 +62,7 @@ export default function BatterySummary() {
 
   return (
     <View style={styles.container}>
+      <BlurView intensity={50} tint="dark" style={[StyleSheet.absoluteFill, styles.blurView]} />
       <View style={styles.header}>
         <Ionicons
           name={getBatteryIcon()}
@@ -77,6 +79,7 @@ export default function BatterySummary() {
       </View>
       
       <View style={styles.detailsContainer}>
+        <BlurView intensity={30} tint="dark" style={[StyleSheet.absoluteFill, styles.detailsBlur]} />
         <View style={styles.detail}>
           <Text style={styles.detailLabel}>Consumo actual:</Text>
           <Text style={styles.detailValue}>
@@ -131,8 +134,9 @@ export default function BatterySummary() {
         )}
       </View>
       
-      {/* Equation explainer */}
+      {/* Ecuaciones explicativas */}
       <View style={styles.equationContainer}>
+        <BlurView intensity={30} tint="dark" style={[StyleSheet.absoluteFill, styles.equationBlur]} />
         <Text style={styles.equationHeader}>Ecuaciones de predicción:</Text>
         <Text style={styles.equation}>dB/dt = -k(∑(Ci * Ai)) - B0</Text>
         <Text style={styles.equationExplanation}>
@@ -158,8 +162,12 @@ const styles = StyleSheet.create({
   container: {
     marginBottom: 24,
     padding: 16,
-    borderRadius: 16,
+    borderRadius: 20,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    overflow: 'hidden',
+  },
+  blurView: {
+    borderRadius: 20,
   },
   header: {
     flexDirection: 'row',
@@ -186,6 +194,10 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.05)',
     borderRadius: 12,
     padding: 12,
+    overflow: 'hidden',
+  },
+  detailsBlur: {
+    borderRadius: 12,
   },
   detail: {
     flexDirection: 'row',
@@ -205,6 +217,10 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.05)',
     borderRadius: 12,
     padding: 12,
+    overflow: 'hidden',
+  },
+  equationBlur: {
+    borderRadius: 12,
   },
   equationHeader: {
     fontSize: 16,

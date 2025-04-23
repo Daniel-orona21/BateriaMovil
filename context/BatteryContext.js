@@ -3,13 +3,13 @@ import { useCamera } from './CameraContext';
 import DeviceInfo from 'react-native-device-info';
 import { Platform } from 'react-native';
 
-// Constants for battery consumption calculations
-// These values represent mAh per hour for each component when active
-const BATTERY_CAPACITY = 3877; // mAh for the device
+// Constantes para cálculos de consumo de batería
+// Estos valores representan mAh por hora para cada componente cuando está activo
+const BATTERY_CAPACITY = 3877; // mAh para el dispositivo
 const CONSUMPTION_RATES = {
-  // Baseline consumption when the app is running but no modules active
+  // Consumo base cuando la aplicación está funcionando pero sin módulos activos
   baseline: 450,  // Aumentado de 150 a 450 para un consumo más realista
-  // Additional consumption rates for each module in mAh/hour
+  // Tasas de consumo adicionales para cada módulo en mAh/hora
   camera: 350,
   compass: 50,
   flashlight: 250,
@@ -18,17 +18,17 @@ const CONSUMPTION_RATES = {
   vibration: 100
 };
 
-// Charging rates constants
-const CHARGING_COEFFICIENT = 0.7; // Efficiency factor
-const MAX_CHARGE_RATE = 1500; // mAh per hour at 0% battery
-const THERMAL_LOSS = 0.08; // Proportion of charging power lost to heat
+// Constantes de tasas de carga
+const CHARGING_COEFFICIENT = 0.7; // Factor de eficiencia
+const MAX_CHARGE_RATE = 1500; // mAh por hora al 0% de batería
+const THERMAL_LOSS = 0.08; // Proporción de energía de carga perdida por calor
 
-// Create the context
+// Crear el contexto
 const BatteryContext = createContext();
 
-// Provider component
+// Componente proveedor
 export const BatteryProvider = ({ children }) => {
-  // Battery state
+  // Estado de la batería
   const [batteryLevel, setBatteryLevel] = useState(100);
   const [isCharging, setIsCharging] = useState(false);
   const [batteryHistory, setBatteryHistory] = useState([]);
@@ -51,7 +51,7 @@ export const BatteryProvider = ({ children }) => {
     vibration: false
   });
 
-  // Update module state based on isCameraActive from CameraContext
+  // Actualizar estado del módulo basado en isCameraActive desde CameraContext
   useEffect(() => {
     if (isCameraActive !== activeModules.camera) {
       setActiveModules(prev => ({
@@ -171,7 +171,7 @@ export const BatteryProvider = ({ children }) => {
     });
   }, [activeModules, batteryLevel, isCharging, calculateTotalConsumption]);
 
-  // Fetch battery level regularly
+  // Obtener nivel de batería regularmente
   useEffect(() => {
     const fetchBatteryInfo = async () => {
       try {
@@ -182,7 +182,7 @@ export const BatteryProvider = ({ children }) => {
         const charging = await DeviceInfo.isBatteryCharging();
         setIsCharging(charging);
         
-        // Add to history with timestamp
+        // Añadir al historial con marca de tiempo
         const timestamp = new Date();
         setBatteryHistory(prev => {
           const lastEntry = prev.length > 0 ? prev[prev.length - 1] : null;
@@ -196,23 +196,23 @@ export const BatteryProvider = ({ children }) => {
               timestamp: timestamp.toISOString(), 
               isCharging: charging,
               isReal: true 
-            }].slice(-60); // Keep the last 60 readings for graphs
+            }].slice(-60); // Mantener las últimas 60 lecturas para gráficos
           }
           return prev;
         });
       } catch (error) {
-        console.error('Error fetching battery info:', error);
+        console.error('Error al obtener información de la batería:', error);
       }
     };
 
-    // Fetch immediately and then every 30 seconds
+    // Obtener información inmediatamente y luego cada 30 segundos
     fetchBatteryInfo();
     const intervalId = setInterval(fetchBatteryInfo, 30000);
     
     return () => clearInterval(intervalId);
   }, []);
 
-  // Register external modules (for modules that are not using their own context)
+  // Registrar módulos externos (para módulos que no utilizan su propio contexto)
   const registerModuleState = useCallback((moduleName, isActive) => {
     if (CONSUMPTION_RATES[moduleName]) {
       setActiveModules(prevModules => {
@@ -228,7 +228,7 @@ export const BatteryProvider = ({ children }) => {
     }
   }, []);
 
-  // Values to expose to consumers
+  // Valores a exponer a los consumidores
   const contextValue = {
     batteryLevel,
     isCharging,
@@ -247,11 +247,11 @@ export const BatteryProvider = ({ children }) => {
   );
 };
 
-// Custom hook for using the context
+// Hook personalizado para usar el contexto
 export const useBattery = () => {
   const context = useContext(BatteryContext);
   if (context === undefined) {
-    throw new Error('useBattery must be used within a BatteryProvider');
+    throw new Error('useBattery debe usarse dentro de un BatteryProvider');
   }
   return context;
 }; 

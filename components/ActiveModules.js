@@ -2,8 +2,9 @@ import React from 'react';
 import { View, Text, StyleSheet, FlatList } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useBattery } from '../context/BatteryContext';
+import { BlurView } from 'expo-blur';
 
-// Map of module names to their icons
+// Mapa de nombres de módulos a sus iconos
 const MODULE_ICONS = {
   camera: {
     component: MaterialCommunityIcons,
@@ -31,7 +32,7 @@ const MODULE_ICONS = {
   },
 };
 
-// Component for a single module item
+// Componente para un único elemento de módulo
 const ModuleItem = ({ module, isActive, consumption }) => {
   const Icon = MODULE_ICONS[module].component;
   
@@ -75,7 +76,7 @@ const ModuleItem = ({ module, isActive, consumption }) => {
 export default function ActiveModules() {
   const { activeModules, consumptionRates } = useBattery();
   
-  // Prepare data for FlatList
+  // Preparar datos para FlatList
   const moduleData = Object.keys(activeModules)
     .filter(module => module !== 'baseline')
     .map(module => ({
@@ -87,6 +88,7 @@ export default function ActiveModules() {
 
   return (
     <View style={styles.container}>
+      <BlurView intensity={50} tint="dark" style={[StyleSheet.absoluteFill, styles.blurView]} />
       <Text style={styles.title}>Estado de los Módulos</Text>
       <FlatList
         data={moduleData}
@@ -109,8 +111,12 @@ const styles = StyleSheet.create({
   container: {
     marginBottom: 24,
     padding: 16,
-    borderRadius: 16,
+    borderRadius: 20,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    overflow: 'hidden',
+  },
+  blurView: {
+    borderRadius: 20,
   },
   title: {
     fontSize: 18,

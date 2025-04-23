@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, Dimensions } from 'react-native';
 import { LineChart } from 'react-native-chart-kit';
 import { useBattery } from '../context/BatteryContext';
+import { BlurView } from 'expo-blur';
 
 const { width } = Dimensions.get('window');
 
@@ -78,7 +79,7 @@ export default function BatteryConsumptionChart() {
     return historicalPoints.concat(predictionPoints);
   }, [batteryHistory, predictionData]);
   
-  // We need at least 2 data points for a line chart
+  // Necesitamos al menos 2 puntos de datos para un gráfico de línea
   if (combinedData.length < 2) {
     return (
       <View style={styles.container}>
@@ -203,6 +204,7 @@ export default function BatteryConsumptionChart() {
 
   return (
     <View style={styles.container}>
+      <BlurView intensity={50} tint="dark" style={[StyleSheet.absoluteFill, styles.blurView]} />
       <Text style={styles.title}>Historial y Predicción de Batería</Text>
       
       {/* Información de la proyección */}
@@ -247,9 +249,13 @@ const styles = StyleSheet.create({
   container: {
     marginBottom: 24,
     padding: 16,
-    borderRadius: 16,
+    borderRadius: 20,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     width: '100%',
+    overflow: 'hidden',
+  },
+  blurView: {
+    borderRadius: 20,
   },
   title: {
     fontSize: 18,
