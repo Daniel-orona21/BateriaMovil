@@ -152,10 +152,7 @@ export default function BatteryConsumptionChart() {
     propsForDots: {
       r: 4,
       strokeWidth: 1,
-      stroke: (dataPoint, index) => {
-        if (index === undefined) return '#007AFF';
-        return index <= realDataEndIndex ? '#007AFF' : '#FF9500';
-      }
+      stroke: '#007AFF'
     },
     propsForBackgroundLines: {
       strokeDasharray: '',
