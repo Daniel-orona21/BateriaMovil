@@ -35,6 +35,7 @@
     "expo-system-ui": "~4.0.9",
     "react": "18.3.1",
     "react-native": "0.76.9",
+    "react-native-animatable": "^1.4.0",
     "react-native-battery": "^0.1.18",
     "react-native-chart-kit": "^6.12.0",
     "react-native-compass-heading": "^2.0.2",

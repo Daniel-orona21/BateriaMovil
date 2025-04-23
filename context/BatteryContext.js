@@ -8,7 +8,7 @@ import { Platform } from 'react-native';
 const BATTERY_CAPACITY = 3877; // mAh para el dispositivo
 const CONSUMPTION_RATES = {
   // Consumo base cuando la aplicación está funcionando pero sin módulos activos
-  baseline: 450,  // Aumentado de 150 a 450 para un consumo más realista
+  baseline: 470,  // Aumentado de 150 a 450 para un consumo más realista
   // Tasas de consumo adicionales para cada módulo en mAh/hora
   camera: 350,
   compass: 50,
