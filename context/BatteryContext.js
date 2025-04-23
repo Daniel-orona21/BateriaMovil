@@ -18,10 +18,24 @@ const CONSUMPTION_RATES = {
   vibration: 100
 };
 
-// Constantes de tasas de carga
-const CHARGING_COEFFICIENT = 0.7; // Factor de eficiencia
-const MAX_CHARGE_RATE = 1500; // mAh por hora al 0% de batería
-const THERMAL_LOSS = 0.08; // Proporción de energía de carga perdida por calor
+// Modelo de batería de iones de litio - Basado en ecuaciones diferenciales simplificadas
+// Parámetros para un cargador de 20W con batería de 3877mAh
+const CHARGE_PARAMS = {
+  // Corriente máxima durante la fase de corriente constante (CC)
+  maxCurrent: 4000, // 4A máximo para un cargador de 20W (ajustado para coincidir con tiempos reales)
+  
+  // Umbral donde inicia la fase de voltaje constante (CV) - típicamente 70-80%
+  cvThreshold: 80, // Ajustado a 80% según datos reales
+  
+  // Tasa de eficiencia de carga (pérdidas térmicas, etc.)
+  efficiency: 0.92, // Ajustada para tiempos reales
+  
+  // Constante de tiempo para la fase CV (horas)
+  cvTimeConstant: 0.35, // Reducida para acelerar la fase CV (ajustada a datos reales)
+  
+  // Corriente mínima al final de la carga (porcentaje de la máxima)
+  terminationCurrent: 0.1 // 10% de la corriente máxima (ajustado para tiempos reales)
+};
 
 // Crear el contexto
 const BatteryContext = createContext();
@@ -74,6 +88,59 @@ export const BatteryProvider = ({ children }) => {
     return consumption;
   }, [activeModules]);
 
+  // Calcular tiempo de carga basado en el modelo de carga CC-CV y el consumo actual
+  const calculateChargingTime = useCallback((startLevel, totalConsumption) => {
+    // Parámetros del modelo
+    const { maxCurrent, cvThreshold, efficiency, cvTimeConstant, terminationCurrent } = CHARGE_PARAMS;
+    
+    // Corriente efectiva (considerando consumo de dispositivo)
+    const effectiveMaxCurrent = Math.max(50, maxCurrent * efficiency - totalConsumption);
+    
+    // Convertir corriente a tasa de cambio de porcentaje de batería por hora
+    const ccRatePerHour = (effectiveMaxCurrent / BATTERY_CAPACITY) * 100;
+    
+    let timeToFull = 0;
+    
+    // Si el nivel inicial ya está en o por encima del umbral CV
+    if (startLevel >= cvThreshold) {
+      // Sólo fase CV (voltaje constante) - la corriente decrece exponencialmente
+      // Solución de la ecuación diferencial: dB/dt = k * e^(-t/τ) - d
+      // donde B = nivel de batería, k = tasa inicial, τ = constante de tiempo, d = consumo
+      
+      // Encontrar el tiempo para ir desde el nivel actual hasta 99.5%
+      // Usando la aproximación: t = -τ * ln((100 - endLevel) / (100 - startLevel))
+      // Con factor de corrección por el consumo
+      const remaining = 99.5 - startLevel;
+      
+      // Ajuste de corriente inicial basado en dónde comienza en la curva CV
+      const currentFactor = Math.exp(-(startLevel - cvThreshold) / (100 - cvThreshold) / cvTimeConstant);
+      const initialCVRate = ccRatePerHour * currentFactor;
+      
+      // Tiempo basado en el modelo exponencial
+      timeToFull = cvTimeConstant * Math.log(initialCVRate / (terminationCurrent * ccRatePerHour));
+      
+      // Factor de corrección basado en consumo
+      const consumptionFactor = 1 + (totalConsumption / (maxCurrent * efficiency)) * 0.5;
+      timeToFull *= consumptionFactor;
+    } else {
+      // Fase CC: El tiempo es lineal hasta llegar al umbral CV
+      const ccTimeToThreshold = (cvThreshold - startLevel) / ccRatePerHour;
+      
+      // Fase CV: Desde el umbral hasta 99.5%
+      // Usando el modelo exponencial de decaimiento de corriente
+      const cvTime = cvTimeConstant * Math.log(1 / terminationCurrent);
+      
+      // Factor de corrección basado en consumo
+      const consumptionFactor = 1 + (totalConsumption / (maxCurrent * efficiency)) * 0.5;
+      
+      // Tiempo total
+      timeToFull = ccTimeToThreshold + (cvTime * consumptionFactor);
+    }
+    
+    // Limitar tiempo máximo a algo razonable
+    return Math.min(12, Math.max(0.1, timeToFull));
+  }, []);
+
   // Actualizar predicciones cuando cambia el estado de los módulos
   useEffect(() => {
     const totalConsumption = calculateTotalConsumption();
@@ -85,16 +152,9 @@ export const BatteryProvider = ({ children }) => {
     const timeToEmpty = isCharging ? 0 : batteryLevel / consumptionRatePercentPerHour;
     
     // Calcular tiempo hasta carga completa
-    let timeToFull = 0;
-    if (isCharging) {
-      // La tasa de carga disminuye a medida que aumenta el nivel de batería
-      const currentChargeRate = MAX_CHARGE_RATE * CHARGING_COEFFICIENT * 
-        ((100 - batteryLevel) / 100) - (THERMAL_LOSS * MAX_CHARGE_RATE);
-      const chargeRatePercentPerHour = (currentChargeRate / BATTERY_CAPACITY) * 100;
-      timeToFull = (100 - batteryLevel) / chargeRatePercentPerHour;
-    }
+    const timeToFull = isCharging ? calculateChargingTime(batteryLevel, totalConsumption) : 0;
     
-    // Generar puntos para la predicción futura (próximas 12 horas)
+    // Generar puntos para la predicción futura
     const futureLevels = [];
     const now = new Date();
     
@@ -105,16 +165,19 @@ export const BatteryProvider = ({ children }) => {
       isReal: true
     });
     
-    // Generar puntos futuros de predicción cada 30 minutos
+    // Generar puntos futuros de predicción
     if (!isCharging) {
+      // Modelo de descarga: Linear con tasa constante
       let futureLevel = batteryLevel;
+      const stepSizeHours = 0.5; // 30 minutos
+      
       for (let i = 1; i <= 24; i++) {
-        // Calcular nivel futuro (30 minutos = 0.5 horas)
-        futureLevel -= consumptionRatePercentPerHour * 0.5;
+        // Decrementar nivel en base a la tasa de consumo
+        futureLevel -= consumptionRatePercentPerHour * stepSizeHours;
         
         // Si la batería se agotaría, agregar el punto final y terminar
         if (futureLevel <= 0) {
-          const emptyTime = new Date(now.getTime() + (batteryLevel / consumptionRatePercentPerHour) * 3600000);
+          const emptyTime = new Date(now.getTime() + (timeToEmpty * 3600000));
           futureLevels.push({
             level: 0,
             timestamp: emptyTime.toISOString(),
@@ -124,7 +187,7 @@ export const BatteryProvider = ({ children }) => {
         }
         
         // Agregar punto de predicción
-        const futureTime = new Date(now.getTime() + i * 30 * 60000);
+        const futureTime = new Date(now.getTime() + i * stepSizeHours * 3600000);
         futureLevels.push({
           level: Math.round(futureLevel),
           timestamp: futureTime.toISOString(),
@@ -132,34 +195,60 @@ export const BatteryProvider = ({ children }) => {
         });
       }
     } else {
-      // Similar para carga, aumentando en vez de disminuyendo
-      let futureLevel = batteryLevel;
-      for (let i = 1; i <= 24; i++) {
-        const currentChargeRate = MAX_CHARGE_RATE * CHARGING_COEFFICIENT * 
-          ((100 - futureLevel) / 100) - (THERMAL_LOSS * MAX_CHARGE_RATE);
-        const chargeRatePercentPerHour = (currentChargeRate / BATTERY_CAPACITY) * 100;
+      // Modelo de carga: CC-CV (Corriente Constante-Voltaje Constante)
+      const { cvThreshold } = CHARGE_PARAMS;
+      const stepSizeHours = 0.25; // 15 minutos para mayor resolución
+      let currentLevel = batteryLevel;
+      
+      // Calcular la tasa de carga CC (corriente constante) en %/hora
+      const effectiveMaxCurrent = Math.max(50, CHARGE_PARAMS.maxCurrent * CHARGE_PARAMS.efficiency - totalConsumption);
+      const ccRatePerHour = (effectiveMaxCurrent / BATTERY_CAPACITY) * 100;
+      
+      // Determinar puntos hasta llegar al 100%
+      let timeElapsed = 0;
+      let i = 0;
+      
+      while (currentLevel < 99.5 && i < 48) { // Máximo 12 horas (48 puntos de 15 min)
+        i++;
+        timeElapsed += stepSizeHours;
         
-        // Calcular incremento para 30 minutos
-        futureLevel += chargeRatePercentPerHour * 0.5;
-        
-        // Si la batería se cargaría por completo, agregar el punto final y terminar
-        if (futureLevel >= 100) {
-          const fullTime = new Date(now.getTime() + (timeToFull * 3600000));
-          futureLevels.push({
-            level: 100,
-            timestamp: fullTime.toISOString(),
-            isReal: false
-          });
-          break;
+        // Calcular el nuevo nivel basado en fase de carga
+        if (currentLevel < cvThreshold) {
+          // Fase CC: incremento lineal
+          currentLevel += ccRatePerHour * stepSizeHours;
+        } else {
+          // Fase CV: incremento exponencial decreciente
+          // Implementación de la ecuación diferencial:
+          // dB/dt = k * e^(-(B-threshold)/(100-threshold)/τ)
+          const progress = (currentLevel - cvThreshold) / (100 - cvThreshold);
+          const decayFactor = Math.exp(-progress / CHARGE_PARAMS.cvTimeConstant);
+          const cvRate = ccRatePerHour * decayFactor;
+          
+          // Incremento con tasa variable
+          currentLevel += cvRate * stepSizeHours;
         }
         
-        // Agregar punto de predicción
-        const futureTime = new Date(now.getTime() + i * 30 * 60000);
+        // Limitar a 100%
+        currentLevel = Math.min(100, currentLevel);
+        
+        // Agregar punto
+        const futureTime = new Date(now.getTime() + timeElapsed * 3600000);
         futureLevels.push({
-          level: Math.round(futureLevel),
+          level: Math.round(currentLevel),
           timestamp: futureTime.toISOString(),
           isReal: false
         });
+        
+        // Si alcanzamos 99.5% o más, considerar carga completa
+        if (currentLevel >= 99.5) {
+          // Reemplazar último punto con exactamente 100%
+          futureLevels[futureLevels.length - 1] = {
+            level: 100,
+            timestamp: new Date(now.getTime() + timeToFull * 3600000).toISOString(),
+            isReal: false
+          };
+          break;
+        }
       }
     }
     
@@ -169,7 +258,7 @@ export const BatteryProvider = ({ children }) => {
       consumptionRate: parseFloat(consumptionRatePercentPerHour.toFixed(2)),
       futureLevels
     });
-  }, [activeModules, batteryLevel, isCharging, calculateTotalConsumption]);
+  }, [activeModules, batteryLevel, isCharging, calculateTotalConsumption, calculateChargingTime]);
 
   // Obtener nivel de batería regularmente
   useEffect(() => {
