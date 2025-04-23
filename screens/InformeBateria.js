@@ -2,12 +2,17 @@ import React, { useEffect } from 'react';
 import { View, StyleSheet, ScrollView, SafeAreaView } from 'react-native';
 import { Image } from 'expo-image';
 import { useBattery } from '../context/BatteryContext';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { BlurView } from 'expo-blur';
 import BatterySummary from '../components/BatterySummary';
 import BatteryConsumptionChart from '../components/BatteryConsumptionChart';
 import ModuleConsumptionChart from '../components/ModuleConsumptionChart';
 import ActiveModules from '../components/ActiveModules';
+import Calculations from './Calculations';
 
-export default function InformeBateria({ navigation }) {
+const BatteryStack = createNativeStackNavigator();
+
+function BatteryReportScreen({ navigation }) {
   const { batteryLevel, isCharging } = useBattery();
   
   // Update the navigation title with battery level
@@ -50,6 +55,26 @@ export default function InformeBateria({ navigation }) {
   );
 }
 
+export default function InformeBateria() {
+  return (
+    <BatteryStack.Navigator
+      screenOptions={{
+        headerShown: false,
+        animation: 'slide_from_right',
+        contentStyle: {
+          backgroundColor: '#000',
+        }
+      }}
+      initialRouteName="BatteryReport"
+    >
+      <BatteryStack.Screen 
+        name="BatteryReport" 
+        component={BatteryReportScreen} 
+      />
+    </BatteryStack.Navigator>
+  );
+}
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -60,7 +85,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingHorizontal: 20,
-    paddingTop: 100, // Provide space for the header
-    paddingBottom: 30,
+    paddingTop: 50, // Provide space for the header
+    paddingBottom: 50,
   }
 }); 

@@ -1,8 +1,9 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useBattery } from '../context/BatteryContext';
 import { BlurView } from 'expo-blur';
+import { useNavigation, CommonActions } from '@react-navigation/native';
 
 export default function BatterySummary() {
   const { 
@@ -14,6 +15,8 @@ export default function BatterySummary() {
     activeModules,
     consumptionRates
   } = useBattery();
+  
+  const navigation = useNavigation();
   
   // Formatear tiempo restante a formato legible por humanos
   const formatTimeRemaining = (hours) => {
@@ -58,6 +61,15 @@ export default function BatterySummary() {
     } else {
       return '#4CD964'; // Verde para batería alta
     }
+  };
+
+  // Modificar la navegación para que use CommonActions para asegurar navegación a nivel raíz
+  const handleNavigateToCalculations = () => {
+    navigation.dispatch(
+      CommonActions.navigate({
+        name: 'Calculations'
+      })
+    );
   };
 
   return (
@@ -134,26 +146,13 @@ export default function BatterySummary() {
         )}
       </View>
       
-      {/* Ecuaciones explicativas */}
-      <View style={styles.equationContainer}>
-        <BlurView intensity={30} tint="dark" style={[StyleSheet.absoluteFill, styles.equationBlur]} />
-        <Text style={styles.equationHeader}>Ecuaciones de predicción:</Text>
-        <Text style={styles.equation}>dB/dt = -k(∑(Ci * Ai)) - B0</Text>
-        <Text style={styles.equationExplanation}>
-          Donde B = nivel batería, t = tiempo, k = coeficiente de batería, 
-          Ci = consumo del componente i, Ai = componente i activo (0/1),
-          B0 = consumo base
-        </Text>
-        
-        {isCharging && (
-          <>
-            <Text style={styles.equation}>dB/dt = kc * (100 - B) - k_loss</Text>
-            <Text style={styles.equationExplanation}>
-              Donde kc = coeficiente de carga, k_loss = pérdida térmica
-            </Text>
-          </>
-        )}
-      </View>
+      <TouchableOpacity 
+        style={styles.calculationsButton}
+        onPress={handleNavigateToCalculations}
+      >
+        <BlurView intensity={30} tint="dark" style={[StyleSheet.absoluteFill, styles.calculationsBlur]} />
+        <Text style={styles.calculationsButtonText}>Ver cálculos <Ionicons name="chevron-forward" size={14} /></Text>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -264,5 +263,23 @@ const styles = StyleSheet.create({
   moduleConsumption: {
     fontSize: 13,
     color: '#FF9500',
+  },
+  calculationsButton: {
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: 12,
+    padding: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 12,
+    overflow: 'hidden',
+    position: 'relative',
+  },
+  calculationsBlur: {
+    borderRadius: 12,
+  },
+  calculationsButtonText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: 'white',
   },
 }); 

@@ -10,8 +10,10 @@ import { Image } from 'expo-image';
 import Login from './screens/Login';
 import Inicio from './screens/Inicio';
 import InformeBateria from './screens/InformeBateria';
+import Calculations from './screens/Calculations';
 import { CameraProvider } from './context/CameraContext';
 import { BatteryProvider } from './context/BatteryContext';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 // Fix font errors by disabling font scaling and applying maximum patches
 Text.defaultProps = Text.defaultProps || {};
@@ -174,6 +176,50 @@ function AppContent() {
           >
             <Stack.Screen name="Login" component={Login} />
             <Stack.Screen name="MainTabs" component={TabNavigator} />
+            <Stack.Screen 
+              name="Calculations" 
+              component={Calculations}
+              options={({ navigation }) => ({
+                headerShown: true,
+                headerTitle: 'Cálculos de Batería',
+                headerTitleAlign: 'center',
+                headerTransparent: true,
+                presentation: 'fullScreenModal',
+                animation: 'slide_from_right',
+                headerBackVisible: true,
+                headerLeft: (props) => (
+                  <MaterialCommunityIcons 
+                    name="arrow-left" 
+                    size={24} 
+                    color="#ffffff" 
+                    style={{ marginLeft: 10 }}
+                    onPress={() => navigation.goBack()}
+                  />
+                ),
+                headerStyle: {
+                  backgroundColor: 'transparent',
+                  borderBottomWidth: 1,
+                  borderBottomColor: 'rgba(255, 255, 255, 0.1)',
+                },
+                headerTitleStyle: {
+                  color: '#ffffff',
+                  fontSize: 18,
+                  fontWeight: 'bold',
+                },
+                headerBackTitle: 'Volver',
+                headerBackTitleStyle: {
+                  color: '#ffffff',
+                },
+                headerTintColor: '#ffffff',
+                headerBackground: () => (
+                  <BlurView 
+                    tint="dark" 
+                    intensity={50} 
+                    style={[StyleSheet.absoluteFill, { borderBottomWidth: 1, borderBottomColor: 'rgba(255, 255, 255, 0.1)' }]}
+                  />
+                ),
+              })}
+            />
           </Stack.Navigator>
           <StatusBar style="light" />
         </NavigationContainer>
